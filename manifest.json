@@ -1,11 +1,11 @@
 {
-	"id": "sample-plugin",
-	"name": "Sample Plugin",
+	"id": "obsidian-ai-image-analyzer",
+	"name": "AI Image Analyzer",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
-	"isDesktopOnly": false
+	"description": "Analyze images with AI to get a description of the image.",
+	"author": "Swaggeroo",
+	"authorUrl": "https://swaggeroo.de",
+	"fundingUrl": "",
+	"isDesktopOnly": true
 }

@@ -1,5 +1,11 @@
+# WIP
+
+
 Ensure you have the latest version of ollama installed;
 
+---
+---
+---
 
 # Obsidian Sample Plugin
 

@@ -1,7 +1,7 @@
 {
 	"id": "obsidian-ai-image-analyzer",
 	"name": "AI image analyzer",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"minAppVersion": "0.15.0",
 	"description": "Analyze images with AI to get keywords of the image.",
 	"author": "Swaggeroo",

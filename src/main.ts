@@ -95,12 +95,12 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 			this.app.workspace.on('file-menu', (menu, file, _source) => {
 				if (file instanceof TFile && isImageFile(file)) {
 					menu.addItem((item: MenuItem) => {
-						item.setTitle('AI Analyze Image');
+						item.setTitle('AI analyze image');
 
 						const submenu = item.setSubmenu();
 
 						submenu.addItem((item: MenuItem) =>
-							item.setTitle('Analyze Image to clipboard')
+							item.setTitle('Analyze image to clipboard')
 								.setIcon('clipboard')
 								.onClick(() => {
 									analyzeToClipboard(file);
@@ -108,7 +108,7 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 						);
 
 						submenu.addItem((item: MenuItem) =>
-							item.setTitle('Analyze Image')
+							item.setTitle('Analyze image')
 								.setIcon('search')
 								.onClick(async () => {
 									await removeFromCache(file);
@@ -161,8 +161,6 @@ class AIImageAnalyzerSettingsTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl('h2', {text: 'AI Image Analyzer - Settings'});
-
 		new Setting(containerEl)
 			.setName('Pull llava')
 			.setDesc('Pull the llava model')
@@ -191,7 +189,7 @@ class AIImageAnalyzerSettingsTab extends PluginSettingTab {
 					debugMode = value;
 				}));
 
-		new Setting(containerEl).setName('Ollama server settings').setHeading();
+		new Setting(containerEl).setName('Ollama server').setHeading();
 
 		new Setting(containerEl)
 			.setName('Ollama host')

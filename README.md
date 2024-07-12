@@ -13,6 +13,10 @@ Currently it supports:
 - `png`
 - `webp`
 
+### How to use
+To analyze an image, right-click on the image and select `Ai analyze image`.
+Or use the command palette and search for `AI image analyzer`.
+
 ###  OmniSearch
 The plugin was made to integrate with the Obsidian [OmniSearch](https://github.com/scambier/obsidian-omnisearch) Plugin.
 As soon as this plugin is available in the community plugins, I will create a PR to add the integration.

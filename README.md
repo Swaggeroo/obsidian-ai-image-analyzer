@@ -46,7 +46,7 @@ export type AIImageAnalyzerAPI = {
 
 // Then, you can just use this function to get the API
 export function getAIImageAnalyser(): AIImageAnalyzerAPI | undefined {
-	return (app as any).plugins?.plugins?.['obsidian-ai-image-analyzer']?.api
+	return (app as any).plugins?.plugins?.['ai-image-analyzer']?.api
 }
 
 // And use it like this

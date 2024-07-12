@@ -1,5 +1,5 @@
 {
-	"name": "obsidian-ai-image-analyzer",
+	"name": "ai-image-analyzer",
 	"version": "0.1.2",
 	"description": "This plugin analyzes images with AI to get keywords of the image.",
 	"main": "main.js",

@@ -4,7 +4,7 @@ import { libVersion } from "./globals";
 import {AnalyzedText} from "./types";
 
 export function getCacheBasePath(): string {
-	return `${this.app.vault.configDir}/plugins/obsidian-ai-image-analyzer/cache`
+	return `${this.app.vault.configDir}/plugins/ai-image-analyzer/cache`
 }
 
 function getCachePath(file: TFile): string {

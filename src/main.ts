@@ -27,7 +27,6 @@ export type AIImageAnalyzerAPI = {
 
 export default class AIImageAnalyzerPlugin extends Plugin {
 	settings: MyPluginSettings;
-	statusBarItemEl: HTMLElement;
 
 	public api: AIImageAnalyzerAPI = {
 		analyzeImage: analyzeImage,
@@ -135,7 +134,7 @@ class AIImageAnalyzerSettingsTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl('h2', {text: 'AI Image Analyzer - Settings'})
+		containerEl.createEl('h2', {text: 'AI Image Analyzer - Settings'});
 
 		new Setting(containerEl)
 			.setName('Pull llava')
@@ -165,7 +164,7 @@ class AIImageAnalyzerSettingsTab extends PluginSettingTab {
 					debugMode = value;
 				}));
 
-		new Setting(containerEl).setName('Ollama server settings').setHeading()
+		new Setting(containerEl).setName('Ollama server settings').setHeading();
 
 		new Setting(containerEl)
 			.setName('Ollama host')

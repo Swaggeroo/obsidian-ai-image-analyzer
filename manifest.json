@@ -3,7 +3,7 @@
 	"name": "AI Image Analyzer",
 	"version": "0.1.0",
 	"minAppVersion": "0.15.0",
-	"description": "Analyze images with AI to get a description of the image.",
+	"description": "Analyze images with AI to get keywords of the image.",
 	"author": "Swaggeroo",
 	"authorUrl": "https://swaggeroo.de",
 	"fundingUrl": "",

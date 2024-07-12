@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
+	"name": "obsidian-ai-image-analyzer",
 	"version": "0.1.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"description": "This plugin analyzes images with AI to get keywords of the image.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",

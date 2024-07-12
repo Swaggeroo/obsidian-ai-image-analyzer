@@ -1,4 +1,4 @@
-import {App, Editor, MenuItem, Notice, Plugin, PluginSettingTab, Setting, TFile} from 'obsidian';
+import {App, MenuItem, Notice, Plugin, PluginSettingTab, Setting, TFile} from 'obsidian';
 import {ChatResponse, Ollama} from 'ollama';
 import {clearCache, isInCache, readCache, removeFromCache, writeCache} from "./cache";
 
@@ -32,13 +32,13 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 	public api: AIImageAnalyzerAPI = {
 		analyzeImage: analyzeImage,
 		canBeAnalyzed: isImageFile,
-		isInCache: (file: TFile) => false, //TODO Implement cache
+		isInCache: isInCache,
 	}
 
 	async onload() {
 		debugLog('loading ai image analyzer plugin');
 		await this.loadSettings();
-		ollama = new Ollama({host: '127.0.0.1:11434'})
+		ollama = new Ollama({host: `${this.settings.ollamaHost}:${this.settings.ollamaPort}`});
 
 		// Check if ollama is running
 		try {
@@ -117,6 +117,7 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 	}
 
 	async saveSettings() {
+		ollama = new Ollama({host: `${this.settings.ollamaHost}:${this.settings.ollamaPort}`});
 		await this.saveData(this.settings);
 	}
 }
@@ -228,8 +229,8 @@ async function analyzeImage(file: TFile): Promise<string> {
 		return Promise.reject('File is not an image');
 	}
 
-	if (await isInCache(file)) {
-		let text = await readCache(file);
+	if (isInCache(file)) {
+		const text = await readCache(file);
 		if (text) {
 			debugLog('Reading from cache');
 			return Promise.resolve(text.text);
@@ -264,7 +265,7 @@ async function analyzeImage(file: TFile): Promise<string> {
 async function analyzeImageWithNotice(file: TFile): Promise<string> {
 	try {
 		new Notice('Analyzing image');
-		let text = await analyzeImage(file);
+		const text = await analyzeImage(file);
 		new Notice('Image analyzed');
 		return text;
 	} catch (e) {

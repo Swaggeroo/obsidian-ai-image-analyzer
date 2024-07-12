@@ -51,3 +51,6 @@ const text = await getAIImageAnalyser()?.analyzeImage(file)
 
 ## Contributing
 If you want to contribute to this plugin, you can do so by creating a pull request or an issue on the GitHub repository.
+
+## Thanks
+This plugin is heavily inspired by the [Obsidian Text Extractor Plugin](https://github.com/scambier/obsidian-text-extractor).

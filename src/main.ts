@@ -55,9 +55,36 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 			id: 'analyze-image-to-clipboard',
 			name: 'Analyze image to clipboard',
 			callback: () => {
-				const file = getActiveFile(this.app)
+				const file = getActiveFile()
 				if (file != null && isImageFile(file)) {
 					analyzeToClipboard(file);
+				} else {
+					new Notice('No image found');
+				}
+			}
+		});
+
+		this.addCommand({
+			id: 'analyze-image',
+			name: 'Analyze image',
+			callback: () => {
+				const file = getActiveFile()
+				if (file != null && isImageFile(file)) {
+					analyzeImageWithNotice(file);
+				} else {
+					new Notice('No image found');
+				}
+			}
+		});
+
+		this.addCommand({
+			id: 'clear-cache-of-active-image',
+			name: 'Clear cache of active image',
+			callback: () => {
+				const file = getActiveFile()
+				if (file != null && isImageFile(file)) {
+					removeFromCache(file);
+					new Notice('Cache cleared');
 				} else {
 					new Notice('No image found');
 				}
@@ -200,8 +227,8 @@ class AIImageAnalyzerSettingsTab extends PluginSettingTab {
 	}
 }
 
-function getActiveFile(app: App): TFile | null {
-	return app.workspace.activeEditor?.file ?? app.workspace.getActiveFile();
+function getActiveFile(): TFile | null {
+	return this.app.workspace.activeEditor?.file ?? this.app.workspace.getActiveFile();
 }
 
 function isImageFile(file: TFile): boolean {

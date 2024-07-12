@@ -22,6 +22,10 @@ The plugin caches the results of the analysis, so it doesn't have to be done eve
 It caches the result in a json file inside the plugin folder.
 Those files can be synced between devices.
 
+### Limitations
+The prompt to analyze the image will sometimes deliver varying results.
+In the future, I will improve on the prompt or even give the user the option to choose the prompt.
+
 ## Installation
 You can download the latest release from the GitHub [releases page](https://github.com/swaggeroo/obsidian-ai-image-analyser/releases) and install it manually in Obsidian.
 In the future, this plugin will hopefully be available in the Obsidian community plugins.

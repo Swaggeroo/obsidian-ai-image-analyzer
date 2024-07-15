@@ -41,7 +41,7 @@ The exposed API:
 export type AIImageAnalyzerAPI = {
 	analyzeImage: (file: TFile) => Promise<string>;
 	canBeAnalyzed: (file: TFile) => boolean;
-	isInCache: (file: TFile) => boolean;
+	isInCache: (file: TFile) => Promise<boolean>;
 }
 
 // Then, you can just use this function to get the API

@@ -20,7 +20,7 @@ const DEFAULT_SETTINGS: AIImageAnalyzerPluginSettings = {
 export type AIImageAnalyzerAPI = {
 	analyzeImage: (file: TFile) => Promise<string>;
 	canBeAnalyzed: (file: TFile) => boolean;
-	isInCache: (file: TFile) => boolean;
+	isInCache: (file: TFile) => Promise<boolean>;
 }
 
 export default class AIImageAnalyzerPlugin extends Plugin {

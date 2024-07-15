@@ -11,7 +11,7 @@ export async function analyzeImage(file: TFile): Promise<string> {
 		return Promise.reject('File is not an image');
 	}
 
-	if (isInCache(file)) {
+	if (await isInCache(file)) {
 		const text = await readCache(file);
 		if (text) {
 			debugLog('Reading from cache');
@@ -59,9 +59,8 @@ export async function analyzeImageWithNotice(file: TFile): Promise<string> {
 
 export async function analyzeToClipboard(file: TFile) {
 	try {
-		const {clipboard} = require('electron')
 		const text = await analyzeImageWithNotice(file);
-		await clipboard.writeText(text);
+		await activeWindow.navigator.clipboard.writeText(text);
 		new Notice('Text copied to clipboard');
 	} catch (e) {
 		debugLog(e);

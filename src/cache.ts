@@ -15,9 +15,9 @@ function getCachePath(file: TFile): string {
 	return `${folder}/${filename}`;
 }
 
-export function isInCache(file: TFile): boolean {
+export async function isInCache(file: TFile): Promise<boolean> {
 	const path = getCachePath(file);
-	return this.app.vault.adapter.exists(path);
+	return await this.app.vault.adapter.exists(path);
 }
 
 export async function writeCache(file: TFile, text: string): Promise<void> {

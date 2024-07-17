@@ -4,7 +4,6 @@ import {ChatResponse, Ollama} from "ollama";
 import {debugLog, isImageFile} from "./util";
 import {settings} from "./settings";
 
-const promt = 'Describe the image. Just use Keywords. For example: cat, dog, tree. This must be Computer readable. The provided pictures are used in an notebook. Please provide at least 5 Keywords. It will be used to search for the image later.';
 let ollama: Ollama;
 
 export async function analyzeImage(file: TFile): Promise<string> {
@@ -31,7 +30,7 @@ export async function analyzeImage(file: TFile): Promise<string> {
 
 		const response: ChatResponse = await ollama.chat({
 			model: settings.ollamaModel.model, //llava:13b or llava or llava-llama3
-			messages: [{role: 'user', content: promt, images: [data]}],
+			messages: [{role: 'user', content: settings.prompt, images: [data]}],
 		});
 
 		debugLog(response);

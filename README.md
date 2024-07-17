@@ -40,7 +40,8 @@ Those files can be synced between devices.
 
 ### Limitations
 The prompt to analyze the image will sometimes deliver varying results.
-In the future, I will improve on the prompt or even give the user the option to choose the prompt.
+In the future, I will improve on the prompt to make it more consistent.
+You can also modify the prompt in the settings.
 
 ## Installation
 You can download the latest release from the GitHub [releases page](https://github.com/swaggeroo/obsidian-ai-image-analyser/releases) and install it manually in Obsidian.

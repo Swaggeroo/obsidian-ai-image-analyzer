@@ -11,6 +11,7 @@ interface AIImageAnalyzerPluginSettings {
 	ollamaHost: string;
 	ollamaPort: number;
 	ollamaModel: Model;
+	prompt: string;
 }
 
 const DEFAULT_SETTINGS: AIImageAnalyzerPluginSettings = {
@@ -18,17 +19,18 @@ const DEFAULT_SETTINGS: AIImageAnalyzerPluginSettings = {
 	ollamaHost: '127.0.0.1',
 	ollamaPort: 11434,
 	ollamaModel: possibleModels[0],
+	prompt: 'Describe the image. Just use Keywords. For example: cat, dog, tree. This must be Computer readable. The provided pictures are used in an notebook. Please provide at least 5 Keywords. It will be used to search for the image later.',
 }
 
 export let settings: AIImageAnalyzerPluginSettings = Object.assign({}, DEFAULT_SETTINGS);
 
-export async function loadSettings() {
-	settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+export async function loadSettings(plugin: AIImageAnalyzerPlugin) {
+	settings = Object.assign({}, DEFAULT_SETTINGS, await plugin.loadData());
 }
 
-export async function saveSettings() {
+export async function saveSettings(plugin: AIImageAnalyzerPlugin) {
 	setOllama(new Ollama({host: `${settings.ollamaHost}:${settings.ollamaPort}`}));
-	await this.saveData(settings);
+	await plugin.saveData(settings);
 }
 
 export class AIImageAnalyzerSettingsTab extends PluginSettingTab {
@@ -55,7 +57,7 @@ export class AIImageAnalyzerSettingsTab extends PluginSettingTab {
 				.setValue(possibleModels.find(model => model.model === settings.ollamaModel.model)!.name)
 				.onChange(async (value) => {
 					settings.ollamaModel = possibleModels.find(model => model.name === value)!;
-					await saveSettings();
+					await saveSettings(this.plugin);
 				}));
 
 		new Setting(containerEl)
@@ -82,7 +84,7 @@ export class AIImageAnalyzerSettingsTab extends PluginSettingTab {
 				.setValue(settings.debug)
 				.onChange(async (value) => {
 					settings.debug = value;
-					await saveSettings();
+					await saveSettings(this.plugin);
 				}));
 
 		new Setting(containerEl).setName('Ollama server').setHeading();
@@ -95,12 +97,10 @@ export class AIImageAnalyzerSettingsTab extends PluginSettingTab {
 				.setValue(settings.ollamaHost)
 				.onChange(async (value) => {
 					if (value.length === 0) {
-						settings.ollamaHost = '127.0.0.1';
-						await saveSettings();
-						return;
+						value = DEFAULT_SETTINGS.ollamaHost;
 					}
 					settings.ollamaHost = value;
-					await saveSettings();
+					await saveSettings(this.plugin);
 				}));
 
 		new Setting(containerEl)
@@ -110,13 +110,32 @@ export class AIImageAnalyzerSettingsTab extends PluginSettingTab {
 				.setPlaceholder('Enter the port (11434)')
 				.setValue(settings.ollamaPort.toString())
 				.onChange(async (value) => {
-					if (isNaN(parseInt(value))) {
-						settings.ollamaPort = 11434;
-						await saveSettings();
-						return;
+					let port = parseInt(value);
+					if (isNaN(port)) {
+						port = DEFAULT_SETTINGS.ollamaPort;
 					}
-					settings.ollamaPort = parseInt(value);
-					await saveSettings();
+					settings.ollamaPort = port;
+					await saveSettings(this.plugin);
 				}));
+
+		new Setting(containerEl).setName('Advanced').setHeading();
+
+		new Setting(containerEl)
+			.setName('Prompt')
+			.setDesc('Set the prompt for the Ollama model')
+			.addTextArea(text => {
+				text.inputEl.rows = 5;
+				text.inputEl.cols = 50;
+				return text
+					.setPlaceholder('Enter the prompt')
+					.setValue(settings.prompt)
+					.onChange(async (value) => {
+						if (value.length === 0) {
+							value = DEFAULT_SETTINGS.prompt;
+						}
+						settings.prompt = value;
+						await saveSettings(this.plugin);
+					});
+			});
 	}
 }

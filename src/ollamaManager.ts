@@ -3,7 +3,7 @@ import {isInCache, readCache, removeFromCache, writeCache} from "./cache";
 import {ChatResponse, Ollama} from "ollama";
 import {debugLog, isImageFile} from "./util";
 
-const promt = 'Describe the image. Just use Keywords. For example: cat, dog, tree. This must be Computer readable. It will be used to search for the image later.';
+const promt = 'Describe the image. Just use Keywords. For example: cat, dog, tree. This must be Computer readable. The provided pictures are used in an notebook. Please provide at least 5 Keywords. It will be used to search for the image later.';
 let ollama: Ollama;
 
 export async function analyzeImage(file: TFile): Promise<string> {
@@ -29,7 +29,7 @@ export async function analyzeImage(file: TFile): Promise<string> {
 		const data: string = arrayBufferToBase64(await this.app.vault.readBinary(file));
 
 		const response: ChatResponse = await ollama.chat({
-			model: 'llava',
+			model: 'llava', //llava:13b or llava or llava-llama3
 			messages: [{role: 'user', content: promt, images: [data]}],
 		});
 

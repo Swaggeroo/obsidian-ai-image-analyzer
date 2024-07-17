@@ -1,6 +1,6 @@
 {
 	"name": "ai-image-analyzer",
-	"version": "0.1.5",
+	"version": "0.1.6",
 	"description": "This plugin analyzes images with AI to get keywords of the image.",
 	"main": "main.js",
 	"scripts": {

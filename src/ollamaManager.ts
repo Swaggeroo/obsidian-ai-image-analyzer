@@ -46,8 +46,9 @@ export async function analyzeImage(file: TFile): Promise<string> {
 
 export async function analyzeImageWithNotice(file: TFile): Promise<string> {
 	try {
-		new Notice('Analyzing image');
+		const notice = new Notice('Analyzing image', 0);
 		const text = await analyzeImage(file);
+		notice.hide();
 		new Notice('Image analyzed');
 		return text;
 	} catch (e) {

@@ -1,9 +1,35 @@
 import {App, Notice, PluginSettingTab, Setting} from "obsidian";
 import {clearCache} from "./cache";
 import AIImageAnalyzerPlugin from "./main";
-import {pullImage} from "./ollamaManager";
-import {setDebugMode} from "./util";
+import {pullImage, setOllama} from "./ollamaManager";
 import {possibleModels} from "./globals";
+import {Model} from "./types";
+import {Ollama} from "ollama";
+
+interface AIImageAnalyzerPluginSettings {
+	debug: boolean;
+	ollamaHost: string;
+	ollamaPort: number;
+	ollamaModel: Model;
+}
+
+const DEFAULT_SETTINGS: AIImageAnalyzerPluginSettings = {
+	debug: false,
+	ollamaHost: '127.0.0.1',
+	ollamaPort: 11434,
+	ollamaModel: possibleModels[0],
+}
+
+export let settings: AIImageAnalyzerPluginSettings = Object.assign({}, DEFAULT_SETTINGS);
+
+export async function loadSettings() {
+	settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+}
+
+export async function saveSettings() {
+	setOllama(new Ollama({host: `${settings.ollamaHost}:${settings.ollamaPort}`}));
+	await this.saveData(settings);
+}
 
 export class AIImageAnalyzerSettingsTab extends PluginSettingTab {
 	plugin: AIImageAnalyzerPlugin;
@@ -26,10 +52,10 @@ export class AIImageAnalyzerSettingsTab extends PluginSettingTab {
 					acc[model.name] = model.name;
 					return acc;
 				}, {} as Record<string, string>))
-				.setValue(possibleModels.find(model => model.model === this.plugin.settings.ollamaModel.model)!.name)
+				.setValue(possibleModels.find(model => model.model === settings.ollamaModel.model)!.name)
 				.onChange(async (value) => {
-					this.plugin.settings.ollamaModel = possibleModels.find(model => model.name === value)!;
-					await this.plugin.saveSettings();
+					settings.ollamaModel = possibleModels.find(model => model.name === value)!;
+					await saveSettings();
 				}));
 
 		new Setting(containerEl)
@@ -53,11 +79,10 @@ export class AIImageAnalyzerSettingsTab extends PluginSettingTab {
 			.setName('Debug mode')
 			.setDesc('Enable debug mode to see logs in the console')
 			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.debug)
+				.setValue(settings.debug)
 				.onChange(async (value) => {
-					this.plugin.settings.debug = value;
-					await this.plugin.saveSettings();
-					setDebugMode(value);
+					settings.debug = value;
+					await saveSettings();
 				}));
 
 		new Setting(containerEl).setName('Ollama server').setHeading();
@@ -67,15 +92,15 @@ export class AIImageAnalyzerSettingsTab extends PluginSettingTab {
 			.setDesc('Set the host for the Ollama server')
 			.addText(text => text
 				.setPlaceholder('Enter the host (127.0.0.1)')
-				.setValue(this.plugin.settings.ollamaHost)
+				.setValue(settings.ollamaHost)
 				.onChange(async (value) => {
 					if (value.length === 0) {
-						this.plugin.settings.ollamaHost = '127.0.0.1';
-						await this.plugin.saveSettings();
+						settings.ollamaHost = '127.0.0.1';
+						await saveSettings();
 						return;
 					}
-					this.plugin.settings.ollamaHost = value;
-					await this.plugin.saveSettings();
+					settings.ollamaHost = value;
+					await saveSettings();
 				}));
 
 		new Setting(containerEl)
@@ -83,15 +108,15 @@ export class AIImageAnalyzerSettingsTab extends PluginSettingTab {
 			.setDesc('Set the port for the Ollama server')
 			.addText(text => text
 				.setPlaceholder('Enter the port (11434)')
-				.setValue(this.plugin.settings.ollamaPort.toString())
+				.setValue(settings.ollamaPort.toString())
 				.onChange(async (value) => {
 					if (isNaN(parseInt(value))) {
-						this.plugin.settings.ollamaPort = 11434;
-						await this.plugin.saveSettings();
+						settings.ollamaPort = 11434;
+						await saveSettings();
 						return;
 					}
-					this.plugin.settings.ollamaPort = parseInt(value);
-					await this.plugin.saveSettings();
+					settings.ollamaPort = parseInt(value);
+					await saveSettings();
 				}));
 	}
 }

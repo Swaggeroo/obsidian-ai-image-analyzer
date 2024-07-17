@@ -2,7 +2,7 @@ import {arrayBufferToBase64, Notice, TFile} from "obsidian";
 import {isInCache, readCache, removeFromCache, writeCache} from "./cache";
 import {ChatResponse, Ollama} from "ollama";
 import {debugLog, isImageFile} from "./util";
-import {selectedModel} from "./globals";
+import {settings} from "./settings";
 
 const promt = 'Describe the image. Just use Keywords. For example: cat, dog, tree. This must be Computer readable. The provided pictures are used in an notebook. Please provide at least 5 Keywords. It will be used to search for the image later.';
 let ollama: Ollama;
@@ -30,7 +30,7 @@ export async function analyzeImage(file: TFile): Promise<string> {
 		const data: string = arrayBufferToBase64(await this.app.vault.readBinary(file));
 
 		const response: ChatResponse = await ollama.chat({
-			model: selectedModel.model, //llava:13b or llava or llava-llama3
+			model: settings.ollamaModel.model, //llava:13b or llava or llava-llama3
 			messages: [{role: 'user', content: promt, images: [data]}],
 		});
 
@@ -70,9 +70,9 @@ export async function analyzeToClipboard(file: TFile) {
 
 export async function pullImage() {
 	try {
-		new Notice(`Pulling ${selectedModel.name} model started, this may take a while...`);
-		const response = await ollama.pull({model: selectedModel.model, stream: true});
-		const progressNotice = new Notice(`Pulling ${selectedModel.name} model 0%`, 0);
+		new Notice(`Pulling ${settings.ollamaModel.name} model started, this may take a while...`);
+		const response = await ollama.pull({model: settings.ollamaModel.model, stream: true});
+		const progressNotice = new Notice(`Pulling ${settings.ollamaModel.name} model 0%`, 0);
 		for await (const part of response) {
 			debugLog(part);
 			if (part.total !== null && part.completed !== null) {
@@ -81,12 +81,12 @@ export async function pullImage() {
 					const roundedNumber = percentage.toFixed(2);
 					const completed = (part.completed / 1000000000).toFixed(2);
 					const total = (part.total / 1000000000).toFixed(2);
-					progressNotice.setMessage(`Pulling ${selectedModel.name} model ${roundedNumber}% (${completed}GB/${total}GB)`);
+					progressNotice.setMessage(`Pulling ${settings.ollamaModel.name} model ${roundedNumber}% (${completed}GB/${total}GB)`);
 				}
 			}
 		}
 		progressNotice.hide();
-		new Notice(`${selectedModel.name} model pulled successfully`);
+		new Notice(`${settings.ollamaModel.name} model pulled successfully`);
 	} catch (e) {
 		debugLog(e);
 		new Notice('Failed to pull ${model.name} model');
@@ -97,8 +97,8 @@ export async function checkOllama() {
 	try {
 		const models = await ollama.list();
 		debugLog(models);
-		if (!models.models.some(model => model.name === selectedModel.model)) {
-			new Notice(`No ${selectedModel.name} model found, please make sure you have pulled it (you can pull it over the settings tab or choose another model)`);
+		if (!models.models.some(model => model.name === settings.ollamaModel.model)) {
+			new Notice(`No ${settings.ollamaModel.name} model found, please make sure you have pulled it (you can pull it over the settings tab or choose another model)`);
 		}
 	} catch (e) {
 		debugLog(e);

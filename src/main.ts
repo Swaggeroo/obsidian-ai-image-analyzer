@@ -2,24 +2,8 @@ import {MenuItem, Notice, Plugin, TFile} from 'obsidian';
 import {Ollama} from 'ollama';
 import {isInCache, removeFromCache} from "./cache";
 import {analyzeImage, analyzeImageWithNotice, analyzeToClipboard, checkOllama, setOllama} from "./ollamaManager";
-import {debugLog, isImageFile, setDebugMode} from "./util";
-import {AIImageAnalyzerSettingsTab} from "./settings";
-import {Model} from "./types";
-import {possibleModels, setSelectedModel} from "./globals";
-
-interface AIImageAnalyzerPluginSettings {
-	debug: boolean;
-	ollamaHost: string;
-	ollamaPort: number;
-	ollamaModel: Model;
-}
-
-const DEFAULT_SETTINGS: AIImageAnalyzerPluginSettings = {
-	debug: false,
-	ollamaHost: '127.0.0.1',
-	ollamaPort: 11434,
-	ollamaModel: possibleModels[0],
-}
+import {debugLog, isImageFile} from "./util";
+import {AIImageAnalyzerSettingsTab, loadSettings, settings} from "./settings";
 
 export type AIImageAnalyzerAPI = {
 	analyzeImage: (file: TFile) => Promise<string>;
@@ -28,7 +12,6 @@ export type AIImageAnalyzerAPI = {
 }
 
 export default class AIImageAnalyzerPlugin extends Plugin {
-	settings: AIImageAnalyzerPluginSettings;
 
 	public api: AIImageAnalyzerAPI = {
 		analyzeImage: analyzeImage,
@@ -38,8 +21,8 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 
 	async onload() {
 		debugLog('loading ai image analyzer plugin');
-		await this.loadSettings();
-		setOllama(new Ollama({host: `${this.settings.ollamaHost}:${this.settings.ollamaPort}`}));
+		await loadSettings();
+		setOllama(new Ollama({host: `${settings.ollamaHost}:${settings.ollamaPort}`}));
 
 		await checkOllama();
 
@@ -137,18 +120,6 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 
 	onunload() {
 		debugLog('unloading ai image analyzer plugin')
-	}
-
-	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-		setSelectedModel(this.settings.ollamaModel);
-		setDebugMode(this.settings.debug);
-	}
-
-	async saveSettings() {
-		setOllama(new Ollama({host: `${this.settings.ollamaHost}:${this.settings.ollamaPort}`}));
-		setSelectedModel(this.settings.ollamaModel);
-		await this.saveData(this.settings);
 	}
 }
 

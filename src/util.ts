@@ -1,13 +1,8 @@
 import {TFile} from "obsidian";
-
-let debugMode = false;
-
-export function setDebugMode(value: boolean) {
-	debugMode = value;
-}
+import {settings} from "./settings";
 
 export function debugLog(message: object | string) {
-	if (debugMode) {
+	if (settings.debug) {
 		console.log(message);
 	}
 }

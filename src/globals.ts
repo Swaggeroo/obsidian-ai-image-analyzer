@@ -9,9 +9,3 @@ export const possibleModels: Model[] = [
 	{name: 'llava (13B)', model: 'llava:13b'},
 	{name: 'llava (34B)', model: 'llava:34b'}
 ];
-
-export let selectedModel: Model = possibleModels[0];
-
-export function setSelectedModel(model: Model) {
-	selectedModel = model;
-}

@@ -12,6 +12,7 @@ interface AIImageAnalyzerPluginSettings {
 	ollamaPort: number;
 	ollamaModel: Model;
 	prompt: string;
+	autoClearCache: boolean;
 }
 
 const DEFAULT_SETTINGS: AIImageAnalyzerPluginSettings = {
@@ -20,6 +21,7 @@ const DEFAULT_SETTINGS: AIImageAnalyzerPluginSettings = {
 	ollamaPort: 11434,
 	ollamaModel: possibleModels[0],
 	prompt: 'Describe the image. Just use Keywords. For example: cat, dog, tree. This must be Computer readable. The provided pictures are used in an notebook. Please provide at least 5 Keywords. It will be used to search for the image later.',
+	autoClearCache: true,
 }
 
 export let settings: AIImageAnalyzerPluginSettings = Object.assign({}, DEFAULT_SETTINGS);
@@ -58,6 +60,10 @@ export class AIImageAnalyzerSettingsTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					settings.ollamaModel = possibleModels.find(model => model.name === value)!;
 					await saveSettings(this.plugin);
+					if (settings.autoClearCache) {
+						await clearCache();
+						new Notice('Cache cleared');
+					}
 				}));
 
 		new Setting(containerEl)
@@ -135,7 +141,27 @@ export class AIImageAnalyzerSettingsTab extends PluginSettingTab {
 						}
 						settings.prompt = value;
 						await saveSettings(this.plugin);
+
+						if (settings.autoClearCache) {
+							await clearCache();
+							new Notice('Cache cleared');
+						}
 					});
 			});
+
+		new Setting(containerEl)
+			.setName('Auto clear cache')
+			.setDesc('Clear the cache after changing the model or the prompt to reanalyze images (if toggled on the cache will be cleared)')
+			.addToggle(toggle => toggle
+				.setValue(settings.autoClearCache)
+				.onChange(async (value) => {
+					settings.autoClearCache = value;
+					if (value) {
+						await clearCache();
+						new Notice('Cache cleared');
+					}
+					await saveSettings(this.plugin);
+				}));
+
 	}
 }

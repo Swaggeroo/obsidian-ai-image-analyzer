@@ -3,6 +3,7 @@ import {clearCache} from "./cache";
 import AIImageAnalyzerPlugin from "./main";
 import {pullImage} from "./ollamaManager";
 import {setDebugMode} from "./util";
+import {possibleModels} from "./globals";
 
 export class AIImageAnalyzerSettingsTab extends PluginSettingTab {
 	plugin: AIImageAnalyzerPlugin;
@@ -18,8 +19,22 @@ export class AIImageAnalyzerSettingsTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName('Pull llava')
-			.setDesc('Pull the llava model')
+			.setName('Model')
+			.setDesc('Select the model to use')
+			.addDropdown(dropdown => dropdown
+				.addOptions(possibleModels.reduce((acc, model) => {
+					acc[model.name] = model.name;
+					return acc;
+				}, {} as Record<string, string>))
+				.setValue(possibleModels.find(model => model.model === this.plugin.settings.ollamaModel.model)!.name)
+				.onChange(async (value) => {
+					this.plugin.settings.ollamaModel = possibleModels.find(model => model.name === value)!;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Pull Model')
+			.setDesc('Pull the selected model')
 			.addButton(button => button
 				.setButtonText('Pull llava')
 				.onClick(async () => await pullImage()));

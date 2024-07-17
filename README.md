@@ -17,6 +17,18 @@ Currently it supports:
 To analyze an image, right-click on the image and select `Ai analyze image`.
 Or use the command palette and search for `AI image analyzer`.
 
+### Models
+The plugin uses the `llava-llama3` model from Ollama as the default model.
+
+Other models can be used by changing the `model` setting in the plugin settings:
+- `llava-llama3`
+- `llava`
+- `llava:13b`
+- `llava:34b`
+
+If you have a really powerful Computer I recommend using the `llava:13b` or `llava:34b` model, in my testing they were the most accurate.
+`llava` for me was the worst model, but it is a little bit smaller than the `llava-llama3` model.
+
 ###  OmniSearch
 The plugin was made to integrate with the Obsidian [OmniSearch](https://github.com/scambier/obsidian-omnisearch) Plugin.
 As soon as this plugin is available in the community plugins, I will create a PR to add the integration.

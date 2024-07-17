@@ -4,17 +4,21 @@ import {isInCache, removeFromCache} from "./cache";
 import {analyzeImage, analyzeImageWithNotice, analyzeToClipboard, checkOllama, setOllama} from "./ollamaManager";
 import {debugLog, isImageFile, setDebugMode} from "./util";
 import {AIImageAnalyzerSettingsTab} from "./settings";
+import {Model} from "./types";
+import {possibleModels, setSelectedModel} from "./globals";
 
 interface AIImageAnalyzerPluginSettings {
 	debug: boolean;
 	ollamaHost: string;
 	ollamaPort: number;
+	ollamaModel: Model;
 }
 
 const DEFAULT_SETTINGS: AIImageAnalyzerPluginSettings = {
 	debug: false,
 	ollamaHost: '127.0.0.1',
 	ollamaPort: 11434,
+	ollamaModel: possibleModels[0],
 }
 
 export type AIImageAnalyzerAPI = {
@@ -137,11 +141,13 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		setSelectedModel(this.settings.ollamaModel);
 		setDebugMode(this.settings.debug);
 	}
 
 	async saveSettings() {
 		setOllama(new Ollama({host: `${this.settings.ollamaHost}:${this.settings.ollamaPort}`}));
+		setSelectedModel(this.settings.ollamaModel);
 		await this.saveData(this.settings);
 	}
 }

@@ -3,3 +3,8 @@ export type AnalyzedText = {
 	text: string
 	libVersion: string
 }
+
+export type Model = {
+	name: string
+	model: string
+}

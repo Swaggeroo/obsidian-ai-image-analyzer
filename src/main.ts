@@ -20,7 +20,7 @@ const DEFAULT_SETTINGS: AIImageAnalyzerPluginSettings = {
 export type AIImageAnalyzerAPI = {
 	analyzeImage: (file: TFile) => Promise<string>;
 	canBeAnalyzed: (file: TFile) => boolean;
-	isInCache: (file: TFile) => boolean;
+	isInCache: (file: TFile) => Promise<boolean>;
 }
 
 export default class AIImageAnalyzerPlugin extends Plugin {
@@ -42,40 +42,50 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 		this.addCommand({
 			id: 'analyze-image-to-clipboard',
 			name: 'Analyze image to clipboard',
-			callback: () => {
+			checkCallback: (checking: boolean) => {
 				const file = getActiveFile()
+
 				if (file != null && isImageFile(file)) {
-					analyzeToClipboard(file);
-				} else {
-					new Notice('No image found');
+					if (!checking){
+						analyzeToClipboard(file);
+					}
+					return true;
 				}
+
+				return false;
 			}
 		});
 
 		this.addCommand({
 			id: 'analyze-image',
 			name: 'Analyze image',
-			callback: () => {
+			checkCallback: (checking: boolean) => {
 				const file = getActiveFile()
 				if (file != null && isImageFile(file)) {
-					analyzeImageWithNotice(file);
-				} else {
-					new Notice('No image found');
+					if (!checking) {
+						analyzeImageWithNotice(file);
+					}
+					return true;
 				}
+
+				return false;
 			}
 		});
 
 		this.addCommand({
 			id: 'clear-cache-of-active-image',
 			name: 'Clear cache of active image',
-			callback: () => {
+			checkCallback: (checking: boolean) => {
 				const file = getActiveFile()
 				if (file != null && isImageFile(file)) {
-					removeFromCache(file);
-					new Notice('Cache cleared');
-				} else {
-					new Notice('No image found');
+					if (!checking) {
+						removeFromCache(file);
+						new Notice('Cache cleared');
+					}
+					return true;
 				}
+
+				return false;
 			}
 		});
 

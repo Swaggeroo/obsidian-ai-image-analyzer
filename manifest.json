@@ -1,11 +1,10 @@
 {
 	"id": "ai-image-analyzer",
 	"name": "AI image analyzer",
-	"version": "0.1.3",
+	"version": "0.1.4",
 	"minAppVersion": "0.15.0",
 	"description": "Analyze images with AI to get keywords of the image.",
 	"author": "Swaggeroo",
 	"authorUrl": "https://swaggeroo.de",
-	"fundingUrl": "",
 	"isDesktopOnly": true
 }

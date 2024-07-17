@@ -62,7 +62,6 @@ export class AIImageAnalyzerSettingsTab extends PluginSettingTab {
 					await saveSettings(this.plugin);
 					if (settings.autoClearCache) {
 						await clearCache();
-						new Notice('Cache cleared');
 					}
 				}));
 
@@ -144,7 +143,6 @@ export class AIImageAnalyzerSettingsTab extends PluginSettingTab {
 
 						if (settings.autoClearCache) {
 							await clearCache();
-							new Notice('Cache cleared');
 						}
 					});
 			});

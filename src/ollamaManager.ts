@@ -3,18 +3,31 @@ import {isInCache, readCache, removeFromCache, writeCache} from "./cache";
 import {ChatResponse, Ollama} from "ollama";
 import {debugLog, isImageFile} from "./util";
 import {settings} from "./settings";
+import {imagesProcessQueue} from "./globals";
 
 let ollama: Ollama;
 
 export async function analyzeImage(file: TFile): Promise<string> {
+	try {
+		return ((await imagesProcessQueue.add(() => analyzeImageHandling(file)) ?? ''))
+	}catch (e) {
+		debugLog(e);
+		return '';
+	}
+}
+
+async function analyzeImageHandling(file: TFile): Promise<string> {
+	debugLog(`Analyzing image ${file.name}`);
 	if (!isImageFile(file)) {
 		return Promise.reject('File is not an image');
 	}
 
 	if (await isInCache(file)) {
+		debugLog('Cache hit');
 		const text = await readCache(file);
 		if (text) {
 			debugLog('Reading from cache');
+			debugLog(`Image analyzed ${file.name}`);
 			return Promise.resolve(text.text);
 		} else {
 			debugLog('Failed to read cache');
@@ -37,6 +50,8 @@ export async function analyzeImage(file: TFile): Promise<string> {
 		debugLog(response);
 
 		await writeCache(file, response.message.content);
+
+		debugLog(`Image analyzed ${file.name}`);
 
 		return Promise.resolve(response.message.content);
 	} catch (e) {

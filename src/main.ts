@@ -4,6 +4,7 @@ import {isInCache, removeFromCache} from "./cache";
 import {analyzeImage, analyzeImageWithNotice, analyzeToClipboard, checkOllama, setOllama} from "./ollamaManager";
 import {debugLog, isImageFile} from "./util";
 import {AIImageAnalyzerSettingsTab, loadSettings, settings} from "./settings";
+import {imagesProcessQueue} from "./globals";
 
 export type AIImageAnalyzerAPI = {
 	analyzeImage: (file: TFile) => Promise<string>;
@@ -119,6 +120,7 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 	}
 
 	onunload() {
+		imagesProcessQueue.clear();
 		debugLog('unloading ai image analyzer plugin')
 	}
 }

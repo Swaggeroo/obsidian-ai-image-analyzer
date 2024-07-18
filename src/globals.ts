@@ -1,5 +1,6 @@
 import * as packageJson from '../package.json';
-import {Model} from "./types"; // Adjust the path as necessary
+import {Model} from "./types";
+import PQueue from "p-queue"; // Adjust the path as necessary
 
 export const libVersion = packageJson.version;
 
@@ -9,3 +10,5 @@ export const possibleModels: Model[] = [
 	{name: 'llava (13B)', model: 'llava:13b'},
 	{name: 'llava (34B)', model: 'llava:34b'}
 ];
+
+export const imagesProcessQueue = new PQueue({concurrency: 1, timeout: 600000})

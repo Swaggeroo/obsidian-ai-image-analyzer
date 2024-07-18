@@ -4,7 +4,7 @@ import { libVersion } from "./globals";
 import {AnalyzedText} from "./types";
 
 export function getCacheBasePath(): string {
-	return `${this.app.vault.configDir}/plugins/ai-image-analyzer/cache`
+	return `${app.vault.configDir}/plugins/ai-image-analyzer/cache` //must be global app ref to be used externally
 }
 
 function getCachePath(file: TFile): string {
@@ -17,7 +17,7 @@ function getCachePath(file: TFile): string {
 
 export async function isInCache(file: TFile): Promise<boolean> {
 	const path = getCachePath(file);
-	return await this.app.vault.adapter.exists(path);
+	return await app.vault.adapter.exists(path); //must be global app ref to be used externally
 }
 
 export async function writeCache(file: TFile, text: string): Promise<void> {

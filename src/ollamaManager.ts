@@ -9,7 +9,7 @@ let ollama: Ollama;
 
 export async function analyzeImage(file: TFile): Promise<string> {
 	try {
-		return ((await imagesProcessQueue.add(() => analyzeImageHandling(file)) ?? ''))
+		return await imagesProcessQueue.add(() => analyzeImageHandling(file)) ?? ''
 	}catch (e) {
 		debugLog(e);
 		return '';

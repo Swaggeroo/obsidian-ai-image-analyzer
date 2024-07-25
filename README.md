@@ -3,6 +3,7 @@
 This plugin allows you to analyze images in Obsidian using the Ollama API.
 Because of this it requires Ollama to be installed and running on some machine.
 Ensure you have the newest version of Ollama installed.
+[Ollama download](https://ollama.com/download)
 
 ## Features
 It analyses images and returns a keyword list of the image.

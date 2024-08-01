@@ -25,7 +25,7 @@ async function analyzeImageHandling(file: TFile): Promise<string> {
 	if (await isInCache(file)) {
 		debugLog('Cache hit');
 		const text = await readCache(file);
-		if (text) {
+		if (text && text.text !== '') {
 			debugLog('Reading from cache');
 			debugLog(`Image analyzed ${file.name}`);
 			return Promise.resolve(text.text);

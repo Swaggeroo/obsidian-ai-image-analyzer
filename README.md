@@ -31,8 +31,8 @@ If you have a really powerful Computer I recommend using the `llava:13b` or `lla
 `llava` for me was the worst model, but it is a little bit smaller than the `llava-llama3` model.
 
 ###  OmniSearch
-The plugin was made to integrate with the Obsidian [OmniSearch](https://github.com/scambier/obsidian-omnisearch) Plugin.
-As soon as this plugin is available in the community plugins, I will create a PR to add the integration.
+The plugin is integrated with the Obsidian [OmniSearch](https://github.com/scambier/obsidian-omnisearch) Plugin.
+You can enable `Image AI Indexing` in the settings of the OmniSearch plugin to index the results of the image analysis.
 
 ### Cache & Sync
 The plugin caches the results of the analysis, so it doesn't have to be done every time.

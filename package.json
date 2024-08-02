@@ -19,7 +19,7 @@
 		"esbuild": "0.23.0",
 		"obsidian": "latest",
 		"tslib": "2.6.3",
-		"typescript": "5.5.3"
+		"typescript": "5.5.4"
 	},
 	"dependencies": {
 		"ollama": "^0.5.6",

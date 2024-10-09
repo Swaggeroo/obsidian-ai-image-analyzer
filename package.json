@@ -22,7 +22,7 @@
 		"typescript": "5.5.4"
 	},
 	"dependencies": {
-		"ollama": "^0.5.8",
+		"ollama": "^0.5.9",
 		"p-queue": "^8.0.1",
 		"pure-md5": "^0.1.14"
 	}

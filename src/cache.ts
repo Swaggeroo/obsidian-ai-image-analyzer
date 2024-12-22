@@ -1,4 +1,4 @@
-import { md5 } from 'pure-md5';
+import {createHash} from "crypto";
 import {TFile} from "obsidian";
 import { libVersion } from "./globals";
 import {AnalyzedText} from "./types";
@@ -8,7 +8,7 @@ export function getCacheBasePath(): string {
 }
 
 function getCachePath(file: TFile): string {
-	const hash = md5(file.path)
+	const hash = createHash('md5').update(file.path).digest('hex');
 
 	const folder = `${getCacheBasePath()}`
 	const filename = `${hash}.json`

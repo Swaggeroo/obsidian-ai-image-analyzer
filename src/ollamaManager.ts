@@ -39,8 +39,8 @@ async function analyzeImageHandling(file: TFile): Promise<string> {
 	debugLog(file);
 
 	try {
-		const data: string =
-			arrayBufferToBase64(await app.vault.readBinary(file)); //must be global app ref to be used externally
+		// @ts-ignore
+		const data: string = arrayBufferToBase64(await app.vault.readBinary(file)); //must be global app ref to be used externally
 
 		const response: ChatResponse = await ollama.chat({
 			model: settings.ollamaModel.model, //llava:13b or llava or llava-llama3

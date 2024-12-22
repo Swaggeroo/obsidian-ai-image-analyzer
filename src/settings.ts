@@ -69,7 +69,7 @@ export class AIImageAnalyzerSettingsTab extends PluginSettingTab {
 			.setName('Pull Model')
 			.setDesc('Pull the selected model')
 			.addButton(button => button
-				.setButtonText('Pull llava')
+				.setButtonText('Pull Model')
 				.onClick(async () => await pullImage()));
 
 		new Setting(containerEl)

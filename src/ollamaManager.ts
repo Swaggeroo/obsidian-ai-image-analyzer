@@ -70,6 +70,7 @@ export async function analyzeImageWithNotice(file: TFile): Promise<string> {
 	} catch (e) {
 		debugLog(e);
 		new Notice('Failed to analyze image');
+		new Notice(e.toString())
 		return '';
 	}
 }
@@ -105,7 +106,8 @@ export async function pullImage() {
 		new Notice(`${settings.ollamaModel.name} model pulled successfully`);
 	} catch (e) {
 		debugLog(e);
-		new Notice('Failed to pull ${model.name} model');
+		new Notice(`Failed to pull ${settings.ollamaModel.name} model`);
+		new Notice(e.toString())
 	}
 }
 
@@ -119,6 +121,7 @@ export async function checkOllama() {
 	} catch (e) {
 		debugLog(e);
 		new Notice('Failed to connect to Ollama.');
+		new Notice(e.toString())
 	}
 }
 

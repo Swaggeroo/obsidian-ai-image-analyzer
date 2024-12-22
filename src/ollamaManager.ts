@@ -86,10 +86,11 @@ export async function analyzeToClipboard(file: TFile) {
 }
 
 export async function pullImage() {
+	let progressNotice: Notice | undefined;
 	try {
 		new Notice(`Pulling ${settings.ollamaModel.name} model started, this may take a while...`);
 		const response = await ollama.pull({model: settings.ollamaModel.model, stream: true});
-		const progressNotice = new Notice(`Pulling ${settings.ollamaModel.name} model 0%`, 0);
+		progressNotice = new Notice(`Pulling ${settings.ollamaModel.name} model 0%`, 0);
 		for await (const part of response) {
 			debugLog(part);
 			if (part.total !== null && part.completed !== null) {
@@ -106,6 +107,7 @@ export async function pullImage() {
 		new Notice(`${settings.ollamaModel.name} model pulled successfully`);
 	} catch (e) {
 		debugLog(e);
+		progressNotice?.hide();
 		new Notice(`Failed to pull ${settings.ollamaModel.name} model`);
 		new Notice(e.toString())
 	}

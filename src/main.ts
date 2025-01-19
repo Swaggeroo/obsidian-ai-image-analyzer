@@ -23,7 +23,12 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 	async onload() {
 		debugLog('loading ai image analyzer plugin');
 		await loadSettings(this);
-		setOllama(new Ollama({host: `${settings.ollamaHost}:${settings.ollamaPort}`}));
+		setOllama(new Ollama({
+			host: settings.ollamaURL,
+			headers: {
+				'Authorization': `Bearer ${settings.ollamaToken}`
+			}
+		}));
 
 		await checkOllama();
 

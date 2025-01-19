@@ -9,7 +9,7 @@ let ollama: Ollama;
 
 export async function analyzeImage(file: TFile): Promise<string> {
 	try {
-		return await imagesProcessQueue.add(() => analyzeImageHandling(file)) ?? ''
+		return await imagesProcessQueue.add(() => analyzeImageHandling(file)) ?? '';
 	}catch (e) {
 		debugLog(e);
 		return '';
@@ -69,7 +69,7 @@ export async function analyzeImageWithNotice(file: TFile): Promise<string> {
 	} catch (e) {
 		debugLog(e);
 		new Notice('Failed to analyze image');
-		new Notice(e.toString())
+		new Notice(e.toString());
 		return '';
 	}
 }
@@ -108,7 +108,7 @@ export async function pullImage() {
 		debugLog(e);
 		progressNotice?.hide();
 		new Notice(`Failed to pull ${settings.ollamaModel.name} model`);
-		new Notice(e.toString())
+		new Notice(e.toString());
 	}
 }
 
@@ -122,7 +122,7 @@ export async function checkOllama() {
 	} catch (e) {
 		debugLog(e);
 		new Notice('Failed to connect to Ollama.');
-		new Notice(e.toString())
+		new Notice(e.toString());
 	}
 }
 

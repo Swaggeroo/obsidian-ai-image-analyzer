@@ -22,7 +22,7 @@ const DEFAULT_SETTINGS: AIImageAnalyzerPluginSettings = {
 	ollamaModel: possibleModels[0],
 	prompt: 'Describe the image. Just use Keywords. For example: cat, dog, tree. This must be Computer readable. The provided pictures are used in an notebook. Please provide at least 5 Keywords. It will be used to search for the image later.',
 	autoClearCache: true,
-}
+};
 
 export let settings: AIImageAnalyzerPluginSettings = Object.assign({}, DEFAULT_SETTINGS);
 

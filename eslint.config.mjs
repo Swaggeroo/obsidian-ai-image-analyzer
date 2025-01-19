@@ -45,5 +45,7 @@ export default [{
         "@typescript-eslint/ban-ts-comment": "off",
         "no-prototype-builtins": "off",
         "@typescript-eslint/no-empty-function": "off",
+		"semi": ["error", "always"],
+		"no-extra-semi": "error",
     },
 }];

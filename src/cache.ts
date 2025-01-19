@@ -5,14 +5,14 @@ import {AnalyzedText} from "./types";
 
 export function getCacheBasePath(): string {
 	// @ts-ignore
-	return `${app.vault.configDir}/plugins/ai-image-analyzer/cache` //must be global app ref to be used externally
+	return `${app.vault.configDir}/plugins/ai-image-analyzer/cache`; //must be global app ref to be used externally
 }
 
 function getCachePath(file: TFile): string {
 	const hash = createHash('md5').update(file.path).digest('hex');
 
-	const folder = `${getCacheBasePath()}`
-	const filename = `${hash}.json`
+	const folder = `${getCacheBasePath()}`;
+	const filename = `${hash}.json`;
 	return `${folder}/${filename}`;
 }
 
@@ -33,7 +33,7 @@ export async function writeCache(file: TFile, text: string): Promise<void> {
 		path: file.path,
 		text,
 		libVersion: libVersion,
-	}
+	};
 	await this.app.vault.adapter.write(path, JSON.stringify(data));
 }
 

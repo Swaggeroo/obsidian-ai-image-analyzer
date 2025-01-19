@@ -18,12 +18,17 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 		analyzeImage: analyzeImage,
 		canBeAnalyzed: isImageFile,
 		isInCache: isInCache,
-	}
+	};
 
 	async onload() {
 		debugLog('loading ai image analyzer plugin');
 		await loadSettings(this);
-		setOllama(new Ollama({host: `${settings.ollamaHost}:${settings.ollamaPort}`}));
+		setOllama(new Ollama({
+			host: settings.ollamaURL,
+			headers: {
+				'Authorization': `Bearer ${settings.ollamaToken}`
+			}
+		}));
 
 		await checkOllama();
 
@@ -31,7 +36,7 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 			id: 'analyze-image-to-clipboard',
 			name: 'Analyze image to clipboard',
 			checkCallback: (checking: boolean) => {
-				const file = getActiveFile()
+				const file = getActiveFile();
 
 				if (file != null && isImageFile(file)) {
 					if (!checking){
@@ -48,7 +53,7 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 			id: 'analyze-image',
 			name: 'Analyze image',
 			checkCallback: (checking: boolean) => {
-				const file = getActiveFile()
+				const file = getActiveFile();
 				if (file != null && isImageFile(file)) {
 					if (!checking) {
 						analyzeImageWithNotice(file);
@@ -64,7 +69,7 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 			id: 'clear-cache-of-active-image',
 			name: 'Clear cache of active image',
 			checkCallback: (checking: boolean) => {
-				const file = getActiveFile()
+				const file = getActiveFile();
 				if (file != null && isImageFile(file)) {
 					if (!checking) {
 						removeFromCache(file);
@@ -113,7 +118,7 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 					});
 				}
 			})
-		)
+		);
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new AIImageAnalyzerSettingsTab(this.app, this));
@@ -121,7 +126,7 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 
 	onunload() {
 		imagesProcessQueue.clear();
-		debugLog('unloading ai image analyzer plugin')
+		debugLog('unloading ai image analyzer plugin');
 	}
 }
 

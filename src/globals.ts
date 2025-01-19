@@ -13,4 +13,4 @@ export const possibleModels: Model[] = [
 	{name: 'llava (34B)', model: 'llava:34b'}
 ];
 
-export const imagesProcessQueue = new PQueue({concurrency: 1, timeout: 600000})
+export const imagesProcessQueue = new PQueue({concurrency: 1, timeout: 600000});

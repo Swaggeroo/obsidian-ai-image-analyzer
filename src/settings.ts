@@ -8,8 +8,8 @@ import {Ollama} from "ollama";
 
 interface AIImageAnalyzerPluginSettings {
 	debug: boolean;
-	ollamaHost: string;
-	ollamaPort: number;
+	ollamaURL: string;
+	ollamaToken: string;
 	ollamaModel: Model;
 	prompt: string;
 	autoClearCache: boolean;
@@ -17,12 +17,12 @@ interface AIImageAnalyzerPluginSettings {
 
 const DEFAULT_SETTINGS: AIImageAnalyzerPluginSettings = {
 	debug: false,
-	ollamaHost: '127.0.0.1',
-	ollamaPort: 11434,
+	ollamaURL: 'http://127.0.0.1:11434',
+	ollamaToken: '',
 	ollamaModel: possibleModels[0],
 	prompt: 'Describe the image. Just use Keywords. For example: cat, dog, tree. This must be Computer readable. The provided pictures are used in an notebook. Please provide at least 5 Keywords. It will be used to search for the image later.',
 	autoClearCache: true,
-}
+};
 
 export let settings: AIImageAnalyzerPluginSettings = Object.assign({}, DEFAULT_SETTINGS);
 
@@ -31,7 +31,12 @@ export async function loadSettings(plugin: AIImageAnalyzerPlugin) {
 }
 
 export async function saveSettings(plugin: AIImageAnalyzerPlugin) {
-	setOllama(new Ollama({host: `${settings.ollamaHost}:${settings.ollamaPort}`}));
+	setOllama(new Ollama({
+		host: settings.ollamaURL,
+		headers: {
+			'Authorization': `Bearer ${settings.ollamaToken}`
+		}
+	}));
 	await plugin.saveData(settings);
 }
 
@@ -95,31 +100,29 @@ export class AIImageAnalyzerSettingsTab extends PluginSettingTab {
 		new Setting(containerEl).setName('Ollama server').setHeading();
 
 		new Setting(containerEl)
-			.setName('Ollama host')
-			.setDesc('Set the host for the Ollama server')
+			.setName('Ollama URL')
+			.setDesc('Set the URL for the Ollama server')
 			.addText(text => text
-				.setPlaceholder('Enter the host (127.0.0.1)')
-				.setValue(settings.ollamaHost)
+				.setPlaceholder('Enter the host (http://127.0.0.1:11434)')
+				.setValue(settings.ollamaURL)
 				.onChange(async (value) => {
 					if (value.length === 0) {
-						value = DEFAULT_SETTINGS.ollamaHost;
+						value = DEFAULT_SETTINGS.ollamaURL;
 					}
-					settings.ollamaHost = value;
+					settings.ollamaURL = value;
 					await saveSettings(this.plugin);
 				}));
 
 		new Setting(containerEl)
-			.setName('Ollama port')
-			.setDesc('Set the port for the Ollama server')
+			.setName('Ollama Token (Optional)')
+			.setDesc('Set the token for authentication with the Ollama server')
 			.addText(text => text
-				.setPlaceholder('Enter the port (11434)')
-				.setValue(settings.ollamaPort.toString())
+				.setValue(settings.ollamaToken !== '' ? '••••••••••' : '')
 				.onChange(async (value) => {
-					let port = parseInt(value);
-					if (isNaN(port)) {
-						port = DEFAULT_SETTINGS.ollamaPort;
+					if (value.contains('•')) {
+						return;
 					}
-					settings.ollamaPort = port;
+					settings.ollamaToken = value;
 					await saveSettings(this.plugin);
 				}));
 

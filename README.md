@@ -39,6 +39,13 @@ The plugin caches the results of the analysis, so it doesn't have to be done eve
 It caches the result in a json file inside the plugin folder.
 Those files can be synced between devices.
 
+### Ollama Proxys
+Just use the Ollama URL in the settings. For example using [Open Web UI](https://docs.openwebui.com/) you can use the URL `http://[URL:PORT]/ollama` to access Ollama. You probably need to set a token (See Auth)
+
+#### Auth 
+If your Proxy requires a token, you can set it in the settings.
+It sets a `Authorization` header with the value of the token: `'Authorization': 'Bearer [Token]'`
+
 ### Limitations
 The prompt to analyze the image will sometimes deliver varying results.
 In the future, I will improve on the prompt to make it more consistent.

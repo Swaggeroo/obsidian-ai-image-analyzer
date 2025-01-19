@@ -1,7 +1,7 @@
-import {arrayBufferToBase64, Notice, TFile} from "obsidian";
+import {Notice, TFile} from "obsidian";
 import {isInCache, readCache, removeFromCache, writeCache} from "./cache";
 import {ChatResponse, Ollama} from "ollama";
-import {debugLog, isImageFile} from "./util";
+import {debugLog, isImageFile, readFile} from "./util";
 import {settings} from "./settings";
 import {imagesProcessQueue} from "./globals";
 
@@ -9,7 +9,7 @@ let ollama: Ollama;
 
 export async function analyzeImage(file: TFile): Promise<string> {
 	try {
-		return await imagesProcessQueue.add(() => analyzeImageHandling(file)) ?? ''
+		return await imagesProcessQueue.add(() => analyzeImageHandling(file)) ?? '';
 	}catch (e) {
 		debugLog(e);
 		return '';
@@ -39,8 +39,7 @@ async function analyzeImageHandling(file: TFile): Promise<string> {
 	debugLog(file);
 
 	try {
-		// @ts-ignore
-		const data: string = arrayBufferToBase64(await app.vault.readBinary(file)); //must be global app ref to be used externally
+		const data: string = await readFile(file);
 
 		const response: ChatResponse = await ollama.chat({
 			model: settings.ollamaModel.model, //llava:13b or llava or llava-llama3
@@ -70,7 +69,7 @@ export async function analyzeImageWithNotice(file: TFile): Promise<string> {
 	} catch (e) {
 		debugLog(e);
 		new Notice('Failed to analyze image');
-		new Notice(e.toString())
+		new Notice(e.toString());
 		return '';
 	}
 }
@@ -109,7 +108,7 @@ export async function pullImage() {
 		debugLog(e);
 		progressNotice?.hide();
 		new Notice(`Failed to pull ${settings.ollamaModel.name} model`);
-		new Notice(e.toString())
+		new Notice(e.toString());
 	}
 }
 
@@ -123,7 +122,7 @@ export async function checkOllama() {
 	} catch (e) {
 		debugLog(e);
 		new Notice('Failed to connect to Ollama.');
-		new Notice(e.toString())
+		new Notice(e.toString());
 	}
 }
 

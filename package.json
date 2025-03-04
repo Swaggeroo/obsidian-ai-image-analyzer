@@ -12,7 +12,7 @@
 	"author": "",
 	"license": "GPL-3.0",
 	"devDependencies": {
-		"@types/node": "22.13.5",
+		"@types/node": "22.13.8",
 		"@typescript-eslint/eslint-plugin": "8.24.1",
 		"@typescript-eslint/parser": "8.24.1",
 		"builtin-modules": "4.0.0",

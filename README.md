@@ -1,81 +1,88 @@
-# Obsidian AI Image Analyser Plugin
+# AI Image Analyzer for Obsidian
 
-This plugin allows you to analyze images in Obsidian using the Ollama API.
-Because of this it requires Ollama to be installed and running on some machine.
-Ensure you have the newest version of Ollama installed.
-[Ollama download](https://ollama.com/download)
+This plugin analyzes images using AI to extract keywords and descriptions, making your images more searchable and accessible within Obsidian.
 
 ## Features
-It analyses images and returns a keyword list of the image.
 
-Currently it supports:
-- `jpg`
-- `jpeg`
-- `png`
-- `webp`
-
-### How to use
-To analyze an image, right-click on the image and select `Ai analyze image`.
-Or use the command palette and search for `AI image analyzer`.
-
-### Models
-The plugin uses the `llava-llama3` model from Ollama as the default model.
-
-Other models can be used by changing the `model` setting in the plugin settings:
-- `llava-llama3`
-- `llava`
-- `llava:13b`
-- `llava:34b`
-
-If you have a really powerful Computer I recommend using the `llava:13b` or `llava:34b` model, in my testing they were the most accurate.
-`llava` for me was the worst model, but it is a little bit smaller than the `llava-llama3` model.
-
-###  OmniSearch
-The plugin is integrated with the Obsidian [OmniSearch](https://github.com/scambier/obsidian-omnisearch) Plugin.
-You can enable `Image AI Indexing` in the settings of the OmniSearch plugin to index the results of the image analysis.
-
-### Cache & Sync
-The plugin caches the results of the analysis, so it doesn't have to be done every time.
-It caches the result in a json file inside the plugin folder.
-Those files can be synced between devices.
-
-### Ollama Proxys
-Just use the Ollama URL in the settings. For example using [Open Web UI](https://docs.openwebui.com/) you can use the URL `http://[URL:PORT]/ollama` to access Ollama. You probably need to set a token (See Auth)
-
-#### Auth 
-If your Proxy requires a token, you can set it in the settings.
-It sets a `Authorization` header with the value of the token: `'Authorization': 'Bearer [Token]'`
-
-### Limitations
-The prompt to analyze the image will sometimes deliver varying results.
-In the future, I will improve on the prompt to make it more consistent.
-You can also modify the prompt in the settings.
+- Analyze images to extract keywords and descriptions
+- Support for both local (Ollama) and cloud (Google Gemini) AI models
+- Easy switching between providers through a dropdown in settings
+- Dynamic fetching of available Gemini models from the Google API
+- Configurable prompt for customized analysis
+- Image caching for faster repeated analyses
+- Right-click context menu integration for images
+- Commands for quick access to image analysis
+- Support for multiple image formats (PNG, JPG, JPEG, WEBP, SVG)
 
 ## Installation
-You can download the latest release from the GitHub [releases page](https://github.com/swaggeroo/obsidian-ai-image-analyser/releases) and install it manually in Obsidian.
-In the future, this plugin will hopefully be available in the Obsidian community plugins.
 
-## Using AI image analyser as a dependency for your plugin
-The exposed API:
-```typescript
-// Add this type somewhere in your code
-export type AIImageAnalyzerAPI = {
-	analyzeImage: (file: TFile) => Promise<string>;
-	canBeAnalyzed: (file: TFile) => boolean;
-	isInCache: (file: TFile) => Promise<boolean>;
-}
+1. Install the plugin from the Obsidian Community Plugins browser
+2. Enable the plugin in your Obsidian settings
+3. Configure your preferred AI provider in the settings
 
-// Then, you can just use this function to get the API
-export function getAIImageAnalyser(): AIImageAnalyzerAPI | undefined {
-	return (app as any).plugins?.plugins?.['ai-image-analyzer']?.api
-}
+## Configuration
 
-// And use it like this
-const text = await getAIImageAnalyser()?.analyzeImage(file)
+### General Settings
+
+- **AI Provider**: Select between Ollama (local) or Google Gemini (cloud-based)
+- **Debug Mode**: Enable for detailed logs in the developer console
+- **Auto Clear Cache**: Automatically clear the cache when changing models or prompts
+
+### Ollama Configuration
+
+- **Model**: Select from various vision-capable models
+- **Pull Model**: Download the selected model to your local machine
+- **Ollama URL**: Set the URL for the Ollama server (default: http://127.0.0.1:11434)
+- **Ollama Token**: Optional authentication token for the Ollama server
+
+### Google Gemini Configuration
+
+- **API Key**: Your Google AI Studio API key (required for Gemini)
+- **Test & Fetch Models**: Test the API connection and fetch available models from Google's API
+- **Model**: Select from dynamically fetched Gemini vision models
+
+### Common Settings
+
+- **Prompt**: Customize the prompt sent to the AI model
+- **Clear Cache**: Manually clear the image analysis cache
+
+## Usage
+
+### Analyzing Images
+
+1. Right-click on an image in Obsidian
+2. Choose "AI analyze image" to view the analysis
+3. Or choose "AI analyze image to clipboard" to copy the analysis directly
+
+### Commands
+
+The plugin adds several commands that can be accessed via the command palette:
+
+- **Analyze image**: Analyze the currently selected image and display the result
+- **Analyze image to clipboard**: Analyze the currently selected image and copy the result to clipboard
+- **Clear cache of active image**: Remove the cached analysis for the current image
+
+## Requirements
+
+### For Ollama
+
+- [Ollama](https://ollama.ai/) installed and running
+- A vision-capable model downloaded (llava, llama3.2-vision, etc.)
+
+### For Google Gemini
+
+- A Google Gemini API key from [Google AI Studio](https://aistudio.google.com/)
+- Internet connection to fetch available models and make API calls
+
+## Development
+
+This plugin is built using TypeScript and the Obsidian API.
+
+```
+npm install
+npm run dev
 ```
 
-## Contributing
-If you want to contribute to this plugin, you can do so by creating a pull request or an issue on the GitHub repository.
+## License
 
-## Thanks
-This plugin is heavily inspired by the [Obsidian Text Extractor Plugin](https://github.com/scambier/obsidian-text-extractor).
+GPL-3.0

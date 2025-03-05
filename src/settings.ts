@@ -423,6 +423,16 @@ export class AIImageAnalyzerSettingsTab extends PluginSettingTab {
 
 		// Clear existing component
 		this.geminiModelsDropdown.components = [];
+		
+		// Clear any existing dropdown elements from the DOM
+		const settingEl = this.geminiModelsDropdown.settingEl;
+		const controlEl = settingEl.querySelector('.setting-item-control');
+		if (controlEl) {
+			// Remove all child elements from the control element
+			while (controlEl.firstChild) {
+				controlEl.removeChild(controlEl.firstChild);
+			}
+		}
 
 		// Get the models to use - either available models or fallback
 		const modelsToUse =

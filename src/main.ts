@@ -1,30 +1,11 @@
 import { MenuItem, Notice, Plugin, TFile } from "obsidian";
 import { Ollama } from "ollama";
 import { isInCache, removeFromCache } from "./cache";
-import {
-	analyzeImage,
-	analyzeImageWithNotice,
-	analyzeToClipboard,
-	checkOllama,
-	setOllama,
-} from "./ollamaManager";
-import {
-	analyzeImageWithGemini,
-	checkGeminiAPI,
-	fetchAvailableGeminiModels,
-	setGeminiAPI,
-} from "./geminiManager";
+import { analyzeImage, analyzeImageWithNotice, analyzeToClipboard, checkOllama, setOllama, } from "./ollamaManager";
+import { analyzeImageWithGemini, checkGeminiAPI, fetchAvailableGeminiModels, setGeminiAPI, } from "./geminiManager";
 import { debugLog, isImageFile } from "./util";
-import {
-	AIImageAnalyzerSettingsTab,
-	loadSettings,
-	saveSettings,
-	settings,
-} from "./settings";
+import { AIImageAnalyzerSettingsTab, loadSettings, saveSettings, settings, } from "./settings";
 import { imagesProcessQueue } from "./globals";
-import Module from 'module';
-import path from 'path';
-Module.globalPaths.push(path.join(__dirname, 'node_modules'));
 
 export type AIImageAnalyzerAPI = {
 	analyzeImage: (file: TFile) => Promise<string>;

@@ -31,7 +31,6 @@ const context = await esbuild.context({
 		"@lezer/highlight",
 		"@lezer/lr",
 		...builtins,
-		"path"
 	],
 	format: "cjs",
 	target: "es2018",
@@ -40,44 +39,8 @@ const context = await esbuild.context({
 	treeShaking: true,
 	outfile: "main.js",
 	platform: "node",
+	alias: { "canvas": "./node_modules/canvas/browser.js" },
 	loader: { ".node": "file" },
-	plugins: [
-		{
-			name: "node-modules-polyfill",
-			setup(build) {
-				build.onResolve({ filter: /^node:/ }, (args) => {
-					const moduleName = args.path.replace(/^node:/, "");
-					if (moduleName === "fs") {
-						return {
-							path: "empty:" + moduleName,
-							namespace: "empty-module",
-						};
-					}
-				});
-				build.onLoad(
-					{ filter: /^empty:/, namespace: "empty-module" },
-					() => {
-						return {
-							contents:
-								"export default {}; export const promises = {};",
-							loader: "js",
-						};
-					},
-				);
-			},
-		},
-		{
-			name: "node-builtins-polyfill",
-			setup(build) {
-				build.onResolve({ filter: /^node:(.*)$/ }, (args) => {
-					return {
-						path: args.path.replace(/^node:/, ""),
-						external: true,
-					};
-				});
-			},
-		},
-	],
 });
 
 if (prod) {

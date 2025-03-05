@@ -76,10 +76,6 @@ async function analyzeImageHandlingGemini(file: TFile): Promise<string> {
 					category: HarmCategory.HARM_CATEGORY_CIVIC_INTEGRITY,
 					threshold: HarmBlockThreshold.BLOCK_NONE,
 				},
-				{
-					category: HarmCategory.HARM_CATEGORY_UNSPECIFIED,
-					threshold: HarmBlockThreshold.BLOCK_NONE,
-				},
 			],
 			generationConfig: {
 				temperature: 0.4,

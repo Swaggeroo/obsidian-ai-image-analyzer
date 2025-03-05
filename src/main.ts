@@ -1,25 +1,43 @@
-import {MenuItem, Notice, Plugin, TFile} from 'obsidian';
-import {Ollama} from 'ollama';
-import {isInCache, removeFromCache} from "./cache";
-import {analyzeImage, analyzeImageWithNotice, analyzeToClipboard, checkOllama, setOllama} from "./ollamaManager";
-import {analyzeImageWithGemini, checkGeminiAPI, fetchAvailableGeminiModels, setGeminiAPI} from "./geminiManager";
-import {debugLog, isImageFile} from "./util";
-import {AIImageAnalyzerSettingsTab, loadSettings, saveSettings, settings} from "./settings";
-import {imagesProcessQueue} from "./globals";
+import { MenuItem, Notice, Plugin, TFile } from "obsidian";
+import { Ollama } from "ollama";
+import { isInCache, removeFromCache } from "./cache";
+import {
+	analyzeImage,
+	analyzeImageWithNotice,
+	analyzeToClipboard,
+	checkOllama,
+	setOllama,
+} from "./ollamaManager";
+import {
+	analyzeImageWithGemini,
+	checkGeminiAPI,
+	fetchAvailableGeminiModels,
+	setGeminiAPI,
+} from "./geminiManager";
+import { debugLog, isImageFile } from "./util";
+import {
+	AIImageAnalyzerSettingsTab,
+	loadSettings,
+	saveSettings,
+	settings,
+} from "./settings";
+import { imagesProcessQueue } from "./globals";
+import Module from 'module';
+import path from 'path';
+Module.globalPaths.push(path.join(__dirname, 'node_modules'));
 
 export type AIImageAnalyzerAPI = {
 	analyzeImage: (file: TFile) => Promise<string>;
 	canBeAnalyzed: (file: TFile) => boolean;
 	isInCache: (file: TFile) => Promise<boolean>;
-}
+};
 
 export default class AIImageAnalyzerPlugin extends Plugin {
-
 	public api: AIImageAnalyzerAPI = {
 		analyzeImage: async (file: TFile) => {
 			// Return the appropriate analysis based on the active provider
-			return settings.activeProvider === 'ollama' 
-				? analyzeImage(file) 
+			return settings.activeProvider === "ollama"
+				? analyzeImage(file)
 				: analyzeImageWithGemini(file);
 		},
 		canBeAnalyzed: isImageFile,
@@ -27,29 +45,35 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 	};
 
 	async onload() {
-		debugLog('loading ai image analyzer plugin');
+		debugLog("loading ai image analyzer plugin");
 		await loadSettings(this);
-		
+
 		// Initialize the active provider
-		if (settings.activeProvider === 'ollama') {
-			setOllama(new Ollama({
-				host: settings.ollamaURL,
-				headers: {
-					'Authorization': `Bearer ${settings.ollamaToken}`
-				}
-			}));
+		if (settings.activeProvider === "ollama") {
+			setOllama(
+				new Ollama({
+					host: settings.ollamaURL,
+					headers: {
+						Authorization: `Bearer ${settings.ollamaToken}`,
+					},
+				}),
+			);
 			await checkOllama();
-		} else if (settings.activeProvider === 'gemini' && settings.geminiApiKey) {
+		} else if (
+			settings.activeProvider === "gemini" &&
+			settings.geminiApiKey
+		) {
 			setGeminiAPI(settings.geminiApiKey);
-			
+
 			// Fetch available models after setting the API key
 			try {
 				if (settings.availableGeminiModels.length === 0) {
-					debugLog('Fetching available Gemini models on plugin load');
-					settings.availableGeminiModels = await fetchAvailableGeminiModels(settings.geminiApiKey);
+					debugLog("Fetching available Gemini models on plugin load");
+					settings.availableGeminiModels =
+						await fetchAvailableGeminiModels(settings.geminiApiKey);
 					await saveSettings(this);
 				}
-				
+
 				await checkGeminiAPI();
 			} catch (e) {
 				debugLog(`Error initializing Gemini API: ${e}`);
@@ -57,8 +81,8 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 		}
 
 		this.addCommand({
-			id: 'analyze-image-to-clipboard',
-			name: 'Analyze image to clipboard',
+			id: "analyze-image-to-clipboard",
+			name: "Analyze image to clipboard",
 			checkCallback: (checking: boolean) => {
 				const file = getActiveFile();
 				if (file && isImageFile(file)) {
@@ -68,17 +92,17 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 					return true;
 				}
 				return false;
-			}
+			},
 		});
 
 		this.addCommand({
-			id: 'analyze-image',
-			name: 'Analyze image',
+			id: "analyze-image",
+			name: "Analyze image",
 			checkCallback: (checking: boolean) => {
 				const file = getActiveFile();
 				if (file && isImageFile(file)) {
 					if (!checking) {
-						if (settings.activeProvider === 'ollama') {
+						if (settings.activeProvider === "ollama") {
 							analyzeImageWithNotice(file);
 						} else {
 							analyzeImageWithGeminiAndNotice(file);
@@ -87,12 +111,12 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 					return true;
 				}
 				return false;
-			}
+			},
 		});
 
 		this.addCommand({
-			id: 'clear-cache-of-active-image',
-			name: 'Clear cache of active image',
+			id: "clear-cache-of-active-image",
+			name: "Clear cache of active image",
 			checkCallback: (checking: boolean) => {
 				const file = getActiveFile();
 				if (file && isImageFile(file)) {
@@ -104,17 +128,17 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 					return true;
 				}
 				return false;
-			}
+			},
 		});
 
 		this.registerEvent(
-			this.app.workspace.on('file-menu', (menu, file, _source) => {
+			this.app.workspace.on("file-menu", (menu, file, _source) => {
 				if (file instanceof TFile && isImageFile(file)) {
 					menu.addItem((item: MenuItem) => {
-						item.setTitle('AI analyze image');
-						item.setIcon('image-file');
+						item.setTitle("AI analyze image");
+						item.setIcon("image-file");
 						item.onClick(async () => {
-							if (settings.activeProvider === 'ollama') {
+							if (settings.activeProvider === "ollama") {
 								analyzeImageWithNotice(file);
 							} else {
 								analyzeImageWithGeminiAndNotice(file);
@@ -123,23 +147,23 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 					});
 
 					menu.addItem((item: MenuItem) => {
-						item.setTitle('AI analyze image to clipboard');
-						item.setIcon('clipboard-copy');
+						item.setTitle("AI analyze image to clipboard");
+						item.setIcon("clipboard-copy");
 						item.onClick(async () => {
 							analyzeToClipboard(file);
 						});
 					});
 
 					menu.addItem((item: MenuItem) => {
-						item.setTitle('Clear cache of image');
-						item.setIcon('trash');
+						item.setTitle("Clear cache of image");
+						item.setIcon("trash");
 						item.onClick(async () => {
 							await removeFromCache(file);
 							new Notice(`Cache of ${file.name} cleared`);
 						});
 					});
 				}
-			})
+			}),
 		);
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
@@ -147,7 +171,7 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 	}
 
 	onunload() {
-		debugLog('unloading ai image analyzer plugin');
+		debugLog("unloading ai image analyzer plugin");
 		// Clear the queue to prevent hanging operations
 		imagesProcessQueue.clear();
 	}
@@ -165,7 +189,9 @@ async function analyzeImageWithGeminiAndNotice(file: TFile) {
 }
 
 function getActiveFile(): TFile | null {
-	const activeView = this.app.workspace.getActiveViewOfType(this.app.workspace.getViewCreator('markdown'));
+	const activeView = this.app.workspace.getActiveViewOfType(
+		this.app.workspace.getViewCreator("markdown"),
+	);
 	if (activeView) {
 		return activeView.file;
 	}
@@ -177,5 +203,3 @@ function getActiveFile(): TFile | null {
 
 	return null;
 }
-
-

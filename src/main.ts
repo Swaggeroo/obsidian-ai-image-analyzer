@@ -3,7 +3,7 @@ import { Ollama } from "ollama";
 import { isInCache, removeFromCache } from "./cache";
 import { analyzeImage, analyzeImageWithNotice, analyzeToClipboard, checkOllama, setOllama, } from "./ollamaManager";
 import { analyzeImageWithGemini, checkGeminiAPI, fetchAvailableGeminiModels, setGeminiAPI, } from "./geminiManager";
-import { debugLog, isImageFile } from "./util";
+import { debugLog, isImageFile, convertToSnakeCase } from "./util";
 import { AIImageAnalyzerSettingsTab, loadSettings, saveSettings, settings, } from "./settings";
 import { imagesProcessQueue } from "./globals";
 
@@ -112,6 +112,21 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 			},
 		});
 
+		this.addCommand({
+			id: "analyze-and-rename-image",
+			name: "Analyze image and rename with tags",
+			checkCallback: (checking: boolean) => {
+				const file = getActiveFile();
+				if (file && isImageFile(file)) {
+					if (!checking) {
+						analyzeAndRenameFile(file);
+					}
+					return true;
+				}
+				return false;
+			},
+		});
+
 		this.registerEvent(
 			this.app.workspace.on("file-menu", (menu, file, _source) => {
 				if (file instanceof TFile && isImageFile(file)) {
@@ -143,6 +158,14 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 							new Notice(`Cache of ${file.name} cleared`);
 						});
 					});
+
+					menu.addItem((item: MenuItem) => {
+						item.setTitle("AI analyze and rename with tags");
+						item.setIcon("text-cursor-input");
+						item.onClick(async () => {
+							analyzeAndRenameFile(file);
+						});
+					});
 				}
 			}),
 		);
@@ -166,6 +189,58 @@ async function analyzeImageWithGeminiAndNotice(file: TFile) {
 		new Notice(`Analysis of ${file.name}: ${text}`);
 	} else {
 		new Notice(`Could not analyze ${file.name}`);
+	}
+}
+
+// Add this function to handle analyzing and renaming
+async function analyzeAndRenameFile(file: TFile) {
+	new Notice(`Analyzing ${file.name} for renaming...`);
+	
+	// Use the appropriate analysis function based on the active provider
+	const analysisText = settings.activeProvider === "ollama"
+		? await analyzeImage(file)
+		: await analyzeImageWithGemini(file);
+	
+	if (!analysisText) {
+		new Notice(`Could not analyze ${file.name}`);
+		return;
+	}
+	
+	// Convert analysis to snake_case
+	const snakeCaseName = convertToSnakeCase(analysisText);
+	
+	// Get file extension
+	const extension = file.extension;
+	
+	// Get the directory path
+	const dirPath = file.parent?.path || "";
+	
+	// Create base filename
+	const baseFilename = `${snakeCaseName}.${extension}`;
+	let newFilename = baseFilename;
+	let newPath = dirPath ? `${dirPath}/${newFilename}` : newFilename;
+	
+	// Check if file exists and create a unique name if needed
+	let counter = 1;
+	while (await this.app.vault.adapter.exists(newPath)) {
+		// Skip if it's the same file (same path)
+		if (newPath === file.path) {
+			break;
+		}
+		
+		// Create a new filename with a counter
+		newFilename = `${snakeCaseName}_${counter}.${extension}`;
+		newPath = dirPath ? `${dirPath}/${newFilename}` : newFilename;
+		counter++;
+	}
+	
+	try {
+		// Rename the file
+		await this.app.fileManager.renameFile(file, newPath);
+		new Notice(`Renamed to: ${newFilename}`);
+	} catch (error) {
+		debugLog(`Error renaming file: ${error}`);
+		new Notice(`Error renaming file: ${error}`);
 	}
 }
 

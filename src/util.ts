@@ -34,3 +34,19 @@ export async function readFile(file: TFile): Promise<string> {
     // Use a single approach for all image types
     return arrayBufferToBase64(await this.app.vault.readBinary(file));
 }
+
+export function convertToSnakeCase(text: string): string {
+    // Extract keywords/tags from the analysis text
+    // Look for comma-separated words, or words separated by spaces
+    const words = text.split(/[,\s]+/).filter(word => word.trim().length > 0);
+    
+    // Clean up each word (remove punctuation, lowercase)
+    const cleanWords = words.map(word => 
+        word.toLowerCase()
+            .replace(/[^\w\s]/g, '') // Remove punctuation
+            .trim()
+    ).filter(word => word.length > 0);
+    
+    // Join with underscores to create snake_case
+    return cleanWords.join('_');
+}

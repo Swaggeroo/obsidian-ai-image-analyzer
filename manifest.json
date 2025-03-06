@@ -3,8 +3,8 @@
 	"name": "AI image analyzer",
 	"version": "0.3.0",
 	"minAppVersion": "0.15.0",
-	"description": "Analyze images with AI to get keywords of the image.",
-	"author": "Swaggeroo, Robin Collins",
-	"authorUrl": "",
+	"description": "Analyze images with AI to get keywords of the image. Rename files with AI tags.",
+	"author": "Swaggeroo, modified by Robin Collins and ClaudeAI",
+	"authorUrl": "https://github.com/robin-collins",
 	"isDesktopOnly": true
 }

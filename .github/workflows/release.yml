@@ -27,7 +27,7 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                   tag="${GITHUB_REF#refs/tags/}"
-                  
+
                   gh release create "$tag" \
                     --title="$tag" \
                     --draft \

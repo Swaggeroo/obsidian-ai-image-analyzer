@@ -1,128 +1,142 @@
-import {Notice, TFile} from "obsidian";
-import {isInCache, readCache, removeFromCache, writeCache} from "./cache";
-import {ChatResponse, Ollama} from "ollama";
-import {debugLog, isImageFile, readFile} from "./util";
-import {settings} from "./settings";
-import {imagesProcessQueue} from "./globals";
+import { Notice, TFile } from "obsidian";
+import { isInCache, readCache, writeCache } from "./cache";
+import { Ollama } from "ollama";
+import { debugLog, isImageFile, readFile } from "./util";
+import { settings } from "./settings";
+import { imagesProcessQueue } from "./globals";
+import { analyzeImageWithGemini } from "./geminiManager";
 
 let ollama: Ollama;
 
 export async function analyzeImage(file: TFile): Promise<string> {
 	try {
-		return await imagesProcessQueue.add(() => analyzeImageHandling(file)) ?? '';
-	}catch (e) {
+		return (
+			(await imagesProcessQueue.add(() => analyzeImageHandling(file))) ??
+			""
+		);
+	} catch (e) {
 		debugLog(e);
-		return '';
+		return "";
 	}
 }
 
 async function analyzeImageHandling(file: TFile): Promise<string> {
 	debugLog(`Analyzing image ${file.name}`);
 	if (!isImageFile(file)) {
-		return Promise.reject('File is not an image');
+		return "";
 	}
 
+	//check if the image is in the cache
 	if (await isInCache(file)) {
-		debugLog('Cache hit');
-		const text = await readCache(file);
-		if (text && text.text !== '') {
-			debugLog('Reading from cache');
-			debugLog(`Image analyzed ${file.name}`);
-			return Promise.resolve(text.text);
-		} else {
-			debugLog('Failed to read cache');
-			debugLog('Removing from cache');
-			await removeFromCache(file);
+		debugLog(`Image ${file.name} found in cache`);
+		const cachedText = await readCache(file);
+		if (cachedText) {
+			return cachedText.text;
 		}
 	}
 
-	debugLog(file);
-
 	try {
-		const data: string = await readFile(file);
+		debugLog(`Sending request to Ollama: ${file.name}`);
 
-		const response: ChatResponse = await ollama.chat({
-			model: settings.ollamaModel.model, //llava:13b or llava or llava-llama3
-			messages: [{role: 'user', content: settings.prompt, images: [data]}],
+		//@ts-ignore
+		const binaryData = await readFile(file);
+
+		// Format images array for Ollama according to its API requirements
+		// @ts-ignore - Ignoring type issues with Ollama API
+		const chat = await ollama.chat({
+			model: settings.ollamaModel.model,
+			messages: [
+				{
+					role: "user",
+					content: settings.prompt,
+					images: [binaryData],
+				},
+			],
 		});
 
-		debugLog(response);
+		const text = chat.message?.content || "";
+		debugLog(`Response from Ollama: ${file.name}`);
+		debugLog(text);
 
-		await writeCache(file, response.message.content);
+		await writeCache(file, text);
 
-		debugLog(`Image analyzed ${file.name}`);
-
-		return Promise.resolve(response.message.content);
+		return text;
 	} catch (e) {
-		debugLog(e);
-		return Promise.reject('Failed to analyze image');
+		debugLog(`Error analyzing image: ${e}`);
+		new Notice(`Error analyzing image: ${e}`);
+		return "";
 	}
 }
 
 export async function analyzeImageWithNotice(file: TFile): Promise<string> {
-	try {
-		const notice = new Notice('Analyzing image', 0);
-		const text = await analyzeImage(file);
-		notice.hide();
-		new Notice('Image analyzed');
-		return text;
-	} catch (e) {
-		debugLog(e);
-		new Notice('Failed to analyze image');
-		new Notice(e.toString());
-		return '';
+	new Notice(`Analyzing ${file.name}...`);
+
+	const text = await analyzeImage(file);
+	if (text) {
+		new Notice(`Analysis of ${file.name}: ${text}`);
+	} else {
+		new Notice(`Could not analyze ${file.name}`);
 	}
+
+	return text;
 }
 
 export async function analyzeToClipboard(file: TFile) {
 	try {
-		const text = await analyzeImageWithNotice(file);
-		await activeWindow.navigator.clipboard.writeText(text);
-		new Notice('Text copied to clipboard');
+		// Use the appropriate analysis function based on the active provider
+		const text =
+			settings.activeProvider === "ollama"
+				? await analyzeImageWithNotice(file)
+				: await analyzeImageWithGemini(file);
+
+		// @ts-ignore
+		await navigator.clipboard.writeText(text);
+		new Notice("Text copied to clipboard");
 	} catch (e) {
 		debugLog(e);
+		new Notice(`Error copying to clipboard: ${e}`);
 	}
 }
 
 export async function pullImage() {
-	let progressNotice: Notice | undefined;
 	try {
-		new Notice(`Pulling ${settings.ollamaModel.name} model started, this may take a while...`);
-		const response = await ollama.pull({model: settings.ollamaModel.model, stream: true});
-		progressNotice = new Notice(`Pulling ${settings.ollamaModel.name} model 0%`, 0);
-		for await (const part of response) {
-			debugLog(part);
-			if (part.total !== null && part.completed !== null) {
-				const percentage = (part.completed / part.total) * 100;
-				if (!isNaN(percentage) && percentage !== Infinity && percentage !== -Infinity) {
-					const roundedNumber = percentage.toFixed(2);
-					const completed = (part.completed / 1000000000).toFixed(2);
-					const total = (part.total / 1000000000).toFixed(2);
-					progressNotice.setMessage(`Pulling ${settings.ollamaModel.name} model ${roundedNumber}% (${completed}GB/${total}GB)`);
-				}
-			}
+		if (!settings.ollamaModel) {
+			return;
 		}
-		progressNotice.hide();
-		new Notice(`${settings.ollamaModel.name} model pulled successfully`);
+
+		new Notice(
+			`Pulling model ${settings.ollamaModel.name} (${settings.ollamaModel.model})`,
+		);
+		await ollama.pull({
+			model: settings.ollamaModel.model,
+			stream: false,
+		});
+		new Notice(
+			`Model ${settings.ollamaModel.name} (${settings.ollamaModel.model}) pulled successfully`,
+		);
 	} catch (e) {
 		debugLog(e);
-		progressNotice?.hide();
-		new Notice(`Failed to pull ${settings.ollamaModel.name} model`);
-		new Notice(e.toString());
+		new Notice(`Error pulling model: ${e}`);
 	}
 }
 
 export async function checkOllama() {
 	try {
+		debugLog("Checking Ollama connection");
 		const models = await ollama.list();
 		debugLog(models);
-		if (!models.models.some(model => model.name === settings.ollamaModel.model)) {
-			new Notice(`No ${settings.ollamaModel.name} model found, please make sure you have pulled it (you can pull it over the settings tab or choose another model)`);
+		if (
+			!models.models.some(
+				(model) => model.name === settings.ollamaModel.model,
+			)
+		) {
+			new Notice(
+				`No ${settings.ollamaModel.name} model found, please make sure you have pulled it (you can pull it over the settings tab or choose another model)`,
+			);
 		}
 	} catch (e) {
 		debugLog(e);
-		new Notice('Failed to connect to Ollama.');
-		new Notice(e.toString());
+		new Notice(`Could not connect to Ollama: ${e}`);
 	}
 }
 

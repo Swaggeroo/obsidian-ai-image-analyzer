@@ -1,13 +1,13 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-title: ''
-labels: ''
-assignees: ''
-
+title: ""
+labels: ""
+assignees: ""
 ---
 
 **Checklist**
+
 - [ ] Updated to latest Plugin Version
 - [ ] Updated to latest Ollama Version
 - [ ] Updated to latest Obsidian Version
@@ -15,6 +15,7 @@ assignees: ''
 
 **Error Log**
 Please Paste the log from `ctrl + shift + I`
+
 ```
 [logs]
 ```
@@ -42,4 +43,5 @@ Steps to reproduce the behavior:
 - OS:
 
 **Additional information**
+
 - ...

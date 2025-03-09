@@ -55,3 +55,11 @@ export async function readFile(file: TFile): Promise<string> {
 		return arrayBufferToBase64(await app.vault.readBinary(file)); //must be global app ref to be used externally
 	}
 }
+
+export function htmlDescription(innerHTML: string): DocumentFragment {
+	const desc = new DocumentFragment();
+	desc.createSpan({}, span => {
+		span.innerHTML = innerHTML;
+	});
+	return desc;
+}

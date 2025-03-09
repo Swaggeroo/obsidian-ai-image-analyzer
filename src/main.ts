@@ -1,10 +1,10 @@
 import {MenuItem, Notice, Plugin, TFile} from 'obsidian';
-import {Ollama} from 'ollama';
 import {isInCache, removeFromCache} from "./cache";
-import {analyzeImage, analyzeImageWithNotice, analyzeToClipboard, checkOllama, setOllama} from "./ollamaManager";
+import {analyzeImage, analyzeImageWithNotice, analyzeToClipboard} from "./analyserManager";
 import {debugLog, isImageFile} from "./util";
-import {AIImageAnalyzerSettingsTab, loadSettings, settings} from "./settings";
+import {AIImageAnalyzerSettingsTab, loadSettings} from "./settings";
 import {imagesProcessQueue} from "./globals";
+import {AIAdapterAPI} from "./types";
 
 export type AIImageAnalyzerAPI = {
 	analyzeImage: (file: TFile) => Promise<string>;
@@ -23,14 +23,6 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 	async onload() {
 		debugLog('loading ai image analyzer plugin');
 		await loadSettings(this);
-		setOllama(new Ollama({
-			host: settings.ollamaURL,
-			headers: {
-				'Authorization': `Bearer ${settings.ollamaToken}`
-			}
-		}));
-
-		await checkOllama();
 
 		this.addCommand({
 			id: 'analyze-image-to-clipboard',
@@ -128,6 +120,15 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 		imagesProcessQueue.clear();
 		debugLog('unloading ai image analyzer plugin');
 	}
+}
+
+export function getAIAdapter(): AIAdapterAPI | undefined {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const adapter = (this.app as any).plugins?.plugins?.["ai-adapter"]?.api;
+	if (!adapter){
+		new Notice("AI Adapter plugin not found, please install it to use this plugin. See settings for more information.", 10000);
+	}
+	return adapter;
 }
 
 function getActiveFile(): TFile | null {

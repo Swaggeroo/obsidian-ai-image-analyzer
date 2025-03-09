@@ -1,7 +1,7 @@
-import type {} from 'obsidian';
+import type {} from "obsidian";
 
-declare module 'obsidian' {
-  interface MenuItem {
-    setSubmenu(): Menu
-  }
+declare module "obsidian" {
+	interface MenuItem {
+		setSubmenu(): Menu;
+	}
 }

@@ -1,0 +1,30 @@
+name: pre-commit.ci
+
+on: [pull_request]
+
+jobs:
+    pre-commit:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-python@v5
+              with:
+                  python-version: "3.12"
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 18
+
+            - name: Install npm dependencies
+              run: npm ci
+
+            - name: Run pre-commit
+              uses: pre-commit/action@v3.0.1
+
+            - name: Run pre-commit.ci
+              uses: pre-commit-ci/lite-action@v1.1.0
+              if: always()
+              with:
+                  msg: |
+                      chore(deps): [pre-commit.ci] auto fixes\n\nFor more information, see https://pre-commit.ci

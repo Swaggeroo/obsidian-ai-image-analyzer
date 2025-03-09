@@ -1,7 +1,7 @@
-import {createHash} from "crypto";
-import {TFile} from "obsidian";
+import { createHash } from "crypto";
+import { TFile } from "obsidian";
 import { libVersion } from "./globals";
-import {AnalyzedText} from "./types";
+import { AnalyzedText } from "./types";
 
 export function getCacheBasePath(): string {
 	// @ts-ignore
@@ -9,7 +9,7 @@ export function getCacheBasePath(): string {
 }
 
 function getCachePath(file: TFile): string {
-	const hash = createHash('md5').update(file.path).digest('hex');
+	const hash = createHash("md5").update(file.path).digest("hex");
 
 	const folder = `${getCacheBasePath()}`;
 	const filename = `${hash}.json`;
@@ -25,7 +25,7 @@ export async function isInCache(file: TFile): Promise<boolean> {
 export async function writeCache(file: TFile, text: string): Promise<void> {
 	const path = getCachePath(file);
 
-	if (!await this.app.vault.adapter.exists(getCacheBasePath())) {
+	if (!(await this.app.vault.adapter.exists(getCacheBasePath()))) {
 		await this.app.vault.adapter.mkdir(getCacheBasePath());
 	}
 
@@ -44,7 +44,7 @@ export async function readCache(file: TFile): Promise<AnalyzedText | null> {
 			const raw = await this.app.vault.adapter.read(path);
 			return JSON.parse(raw) as AnalyzedText;
 		}
-	}catch (e) {
+	} catch (e) {
 		console.error(e);
 	}
 

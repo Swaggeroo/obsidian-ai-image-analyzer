@@ -8,6 +8,6 @@ repos:
             types: [ts]
           - id: prettier
             name: Prettier
-            entry: prettier --write
+            entry: npx prettier --write
             language: system
             types: [ts]

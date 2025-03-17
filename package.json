@@ -13,7 +13,7 @@
 	"license": "GPL-3.0",
 	"devDependencies": {
 		"@types/node": "22.13.8",
-		"@typescript-eslint/eslint-plugin": "8.26.0",
+		"@typescript-eslint/eslint-plugin": "8.26.1",
 		"@typescript-eslint/parser": "8.26.0",
 		"builtin-modules": "4.0.0",
 		"esbuild": "0.25.0",

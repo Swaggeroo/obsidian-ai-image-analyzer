@@ -22,7 +22,7 @@
 		"typescript": "5.9.2"
 	},
 	"dependencies": {
-		"canvas": "^3.1.2",
+		"canvas": "^3.2.0",
 		"ollama": "^0.5.17",
 		"p-queue": "^8.1.0"
 	}

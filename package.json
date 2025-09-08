@@ -24,6 +24,6 @@
 	"dependencies": {
 		"canvas": "^3.2.0",
 		"ollama": "^0.5.17",
-		"p-queue": "^8.1.0"
+		"p-queue": "^8.1.1"
 	}
 }

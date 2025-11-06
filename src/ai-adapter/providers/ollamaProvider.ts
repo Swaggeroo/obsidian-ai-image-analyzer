@@ -55,7 +55,7 @@ export class OllamaProvider extends Provider {
 
 		new Setting(containerEl)
 			.setName("Ollama URL")
-			.setDesc("Set the URL for the Ollama server")
+			.setDesc("Set the URL for the ollama server")
 			.addText((text) =>
 				text
 					.setPlaceholder("Enter the host (http://127.0.0.1:11434)")
@@ -75,7 +75,7 @@ export class OllamaProvider extends Provider {
 
 		new Setting(containerEl)
 			.setName("Fallback URL (optional)")
-			.setDesc("Set a fallback URL for the Ollama server")
+			.setDesc("Set a fallback URL for the ollama server")
 			.addText((text) =>
 				text
 					.setPlaceholder("Enter the host (http://127.0.0.1:11434)")
@@ -96,7 +96,7 @@ export class OllamaProvider extends Provider {
 		new Setting(containerEl)
 			.setName("Ollama token (optional)")
 			.setDesc(
-				"Set the token used to authenticate with the Ollama server",
+				"Set the token used to authenticate with the ollama server",
 			)
 			.addText((text) =>
 				text
@@ -224,7 +224,7 @@ export class OllamaProvider extends Provider {
 				OllamaProvider.refreshInstance(true);
 				return await this.checkOllama();
 			}
-			new Notice("Error connecting to Ollama.");
+			new Notice("Error connecting to ollama.");
 			new Notice(e.toString());
 			return false;
 		}

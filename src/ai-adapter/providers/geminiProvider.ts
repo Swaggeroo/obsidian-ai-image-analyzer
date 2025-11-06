@@ -38,7 +38,7 @@ export class GeminiProvider extends Provider {
 
 		new Setting(containerEl)
 			.setName("Gemini API key")
-			.setDesc("Set your Gemini API token")
+			.setDesc("Set your gemini API token")
 			.addText((text) =>
 				text
 					.setValue(
@@ -174,7 +174,7 @@ export class GeminiProvider extends Provider {
 		} catch (e) {
 			debugLog(e);
 			new Notice(
-				"Error connecting to Gemini API. Please check your Gemini API key.",
+				"Error connecting to gemini API. Please check your gemini API key.",
 			);
 			new Notice(e.toString());
 			return false;

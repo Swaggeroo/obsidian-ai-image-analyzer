@@ -79,7 +79,7 @@ export class AIImageAnalyzerSettingsTab extends PluginSettingTab {
 			);
 
 		// AI Adapter settings
-		new Setting(containerEl).setName("AI Settings").setHeading();
+		new Setting(containerEl).setName("AI configuration").setHeading();
 		generateSettings(containerEl, this.plugin);
 
 		new Setting(containerEl).setName("Advanced").setHeading();

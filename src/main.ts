@@ -1,6 +1,10 @@
 import { MenuItem, Notice, Plugin, TFile } from "obsidian";
-import { removeFromCache } from "./cache";
-import { analyzeImageWithNotice, analyzeToClipboard } from "./analyserManager";
+import { isInCache, removeFromCache } from "./cache";
+import {
+	analyzeImage,
+	analyzeImageWithNotice,
+	analyzeToClipboard,
+} from "./analyserManager";
 import { debugLog, isImageFile } from "./util";
 import { AIImageAnalyzerSettingsTab, loadSettings } from "./settings";
 import { imagesProcessQueue } from "./globals";
@@ -11,7 +15,19 @@ import {
 } from "./ai-adapter/globals";
 import { initProvider } from "./ai-adapter/util";
 
+export type AIImageAnalyzerAPI = {
+	analyzeImage: (file: TFile) => Promise<string>;
+	canBeAnalyzed: (file: TFile) => boolean;
+	isInCache: (file: TFile) => Promise<boolean>;
+};
+
 export default class AIImageAnalyzerPlugin extends Plugin {
+	public api: AIImageAnalyzerAPI = {
+		analyzeImage: analyzeImage,
+		canBeAnalyzed: isImageFile,
+		isInCache: isInCache,
+	};
+
 	async onload() {
 		debugLog("loading ai image analyzer plugin");
 		await loadSettings(this);

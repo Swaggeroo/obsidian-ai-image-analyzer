@@ -63,8 +63,8 @@ You can also modify the prompt in the settings.
 
 ## Installation
 
-You can download the latest release from the GitHub [releases page](https://github.com/swaggeroo/obsidian-ai-image-analyser/releases) and install it manually in Obsidian.
-In the future, this plugin will hopefully be available in the Obsidian community plugins.
+This plugin is available on the [Obsidian community plugins repository](https://obsidian.md/plugins?id=ai-image-analyzer).
+You also can download the latest release from the GitHub [releases page](https://github.com/swaggeroo/obsidian-ai-image-analyser/releases) and install it manually in Obsidian.
 
 ## Using AI image analyser as a dependency for your plugin
 
@@ -90,6 +90,11 @@ const text = await getAIImageAnalyser()?.analyzeImage(file);
 ## Contributing
 
 If you want to contribute to this plugin, you can do so by creating a pull request or an issue on the GitHub repository.
+
+### Adding new providers
+You can find a example provider in `src/providers/exampleProvider.ts`.
+Just create a new file in the `src/providers` folder and implement the `Provider` interface like in the example.
+Then search for `[NEW PROVIDER]` in the codebase and modify the code accordingly.
 
 ## Thanks
 

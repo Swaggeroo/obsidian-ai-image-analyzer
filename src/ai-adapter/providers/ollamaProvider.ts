@@ -1,0 +1,294 @@
+import { Provider } from "../provider";
+import { Notice, Setting } from "obsidian";
+import { debugLog } from "../util";
+import { ChatResponse, Ollama } from "ollama";
+import { Models } from "../types";
+import { notifyModelsChange, possibleModels } from "../globals";
+import AIImageAnalyzerPlugin from "../../main";
+import { saveSettings, settings } from "../../settings";
+
+let ollama: Ollama;
+let fallback: boolean = false;
+
+export type OllamaSettings = {
+	lastModel: Models;
+	lastImageModel: Models;
+	url: string;
+	fallbackUrl: string;
+	token: string;
+};
+
+export const DEFAULT_OLLAMA_SETTINGS: OllamaSettings = {
+	lastModel: possibleModels[8],
+	lastImageModel: possibleModels[0],
+	url: "http://127.0.0.1:11434",
+	fallbackUrl: "",
+	token: "",
+};
+
+export class OllamaProvider extends Provider {
+	constructor() {
+		super();
+		this.lastModel = settings.aiAdapterSettings.ollamaSettings.lastModel;
+		this.lastImageModel =
+			settings.aiAdapterSettings.ollamaSettings.lastImageModel;
+		OllamaProvider.refreshInstance(fallback);
+		this.checkOllama().then((success) => {
+			debugLog("Ollama check success: " + success);
+		});
+	}
+
+	generateSettings(containerEl: HTMLElement, plugin: AIImageAnalyzerPlugin) {
+		new Setting(containerEl).setName("Ollama").setHeading();
+
+		new Setting(containerEl)
+			.setName("Pull models")
+			.setDesc("Pull the selected models")
+			.addButton((button) =>
+				button.setButtonText("Pull model").onClick(async () => {
+					// await OllamaProvider.pullImage(settings.aiAdapterSettings.selectedModel); Currently not needed
+					await OllamaProvider.pullImage(
+						settings.aiAdapterSettings.selectedImageModel,
+					);
+				}),
+			);
+
+		new Setting(containerEl)
+			.setName("Ollama URL")
+			.setDesc("Set the URL for the Ollama server")
+			.addText((text) =>
+				text
+					.setPlaceholder("Enter the host (http://127.0.0.1:11434)")
+					.setValue(settings.aiAdapterSettings.ollamaSettings.url)
+					.onChange(async (value) => {
+						if (value.length === 0) {
+							value = DEFAULT_OLLAMA_SETTINGS.url;
+						}
+						settings.aiAdapterSettings.ollamaSettings.url = value;
+						OllamaProvider.refreshInstance(fallback);
+						this.checkOllama().then((success) => {
+							debugLog("Ollama check success: " + success);
+						});
+						await saveSettings(plugin);
+					}),
+			);
+
+		new Setting(containerEl)
+			.setName("Fallback URL (optional)")
+			.setDesc("Set a fallback URL for the Ollama server")
+			.addText((text) =>
+				text
+					.setPlaceholder("Enter the host (http://127.0.0.1:11434)")
+					.setValue(
+						settings.aiAdapterSettings.ollamaSettings.fallbackUrl,
+					)
+					.onChange(async (value) => {
+						settings.aiAdapterSettings.ollamaSettings.fallbackUrl =
+							value;
+						OllamaProvider.refreshInstance(fallback);
+						this.checkOllama().then((success) => {
+							debugLog("Ollama check success: " + success);
+						});
+						await saveSettings(plugin);
+					}),
+			);
+
+		new Setting(containerEl)
+			.setName("Ollama token (optional)")
+			.setDesc(
+				"Set the token used to authenticate with the Ollama server",
+			)
+			.addText((text) =>
+				text
+					.setValue(
+						settings.aiAdapterSettings.ollamaSettings.token !== ""
+							? "••••••••••"
+							: "",
+					)
+					.onChange(async (value) => {
+						if (value.contains("•")) {
+							return;
+						}
+						settings.aiAdapterSettings.ollamaSettings.token = value;
+						OllamaProvider.refreshInstance(fallback);
+						await saveSettings(plugin);
+					}),
+			);
+	}
+
+	async queryHandling(prompt: string): Promise<string> {
+		const response: ChatResponse = await ollama.chat({
+			model: settings.aiAdapterSettings.selectedModel.model, //llava:13b or llava or llava-llama3
+			messages: [{ role: "user", content: prompt }],
+		});
+		return response.message.content;
+	}
+
+	async queryWithImageHandling(
+		prompt: string,
+		image: string,
+	): Promise<string> {
+		const response: ChatResponse = await ollama.chat({
+			model: settings.aiAdapterSettings.selectedImageModel.model, //llava:13b or llava or llava-llama3
+			messages: [{ role: "user", content: prompt, images: [image] }],
+		});
+		return response.message.content;
+	}
+
+	private async checkOllama(): Promise<boolean> {
+		try {
+			const models = await ollama.list();
+			debugLog(models);
+			let updated = false;
+			for (const model of models.models) {
+				const capabilities = (await ollama.show({ model: model.name }))
+					.capabilities;
+				const isImageModel = capabilities.includes("vision");
+				const isTextModel = capabilities.includes("completion");
+				const name =
+					model.name.split(":")[0] +
+					" [" +
+					model.details.parameter_size +
+					"]" +
+					" (custom)";
+
+				if (
+					isTextModel &&
+					!possibleModels.some(
+						(m) => m.model === model.name && !m.imageReady,
+					)
+				) {
+					possibleModels.push({
+						name,
+						model: model.name,
+						provider: "ollama",
+						imageReady: false,
+					});
+					debugLog("Added model: " + name);
+					updated = true;
+				}
+
+				if (
+					isImageModel &&
+					!possibleModels.some(
+						(m) => m.model === model.name && m.imageReady,
+					)
+				) {
+					possibleModels.push({
+						name,
+						model: model.name,
+						provider: "ollama",
+						imageReady: true,
+					});
+					debugLog("Added image model: " + name);
+					updated = true;
+				}
+			}
+
+			if (updated) {
+				debugLog("Models updated, notifying settings tab");
+				notifyModelsChange();
+			}
+
+			if (
+				!models.models.some(
+					(model) =>
+						model.name ===
+						settings.aiAdapterSettings.selectedModel.model,
+				)
+			) {
+				debugLog("No text model found (currently not used)");
+				// Add Notice when it gets used
+			}
+			if (
+				!models.models.some(
+					(model) =>
+						model.name ===
+						settings.aiAdapterSettings.selectedImageModel.model,
+				)
+			) {
+				new Notice(
+					`No ${settings.aiAdapterSettings.selectedImageModel.name} model found, please make sure you have pulled it (you can pull it over the settings tab or choose another model)`,
+				);
+			}
+			return true;
+		} catch (e) {
+			debugLog(e);
+			if (
+				!fallback &&
+				settings.aiAdapterSettings.ollamaSettings.fallbackUrl?.length >
+					0
+			) {
+				fallback = true;
+				debugLog("Falling back to fallback URL");
+				OllamaProvider.refreshInstance(true);
+				return await this.checkOllama();
+			}
+			new Notice("Error connecting to Ollama.");
+			new Notice(e.toString());
+			return false;
+		}
+	}
+
+	static async pullImage(model: Models) {
+		let progressNotice: Notice | undefined;
+		try {
+			new Notice(
+				`Pulling ${model.name} model started, this may take a while...`,
+			);
+			const response = await ollama.pull({
+				model: model.model,
+				stream: true,
+			});
+			progressNotice = new Notice(`Pulling ${model.name} model 0%`, 0);
+			for await (const part of response) {
+				debugLog(part);
+				if (part.total !== null && part.completed !== null) {
+					const percentage = (part.completed / part.total) * 100;
+					if (
+						!isNaN(percentage) &&
+						percentage !== Infinity &&
+						percentage !== -Infinity
+					) {
+						const roundedNumber = percentage.toFixed(2);
+						const completed = (part.completed / 1000000000).toFixed(
+							2,
+						);
+						const total = (part.total / 1000000000).toFixed(2);
+						progressNotice.setMessage(
+							`Pulling ${model.name} model ${roundedNumber}% (${completed}GB/${total}GB)`,
+						);
+					}
+				}
+			}
+			progressNotice.hide();
+			new Notice(`${model.name} model pulled successfully`);
+		} catch (e) {
+			debugLog(e);
+			progressNotice?.hide();
+			new Notice(`Failed to pull ${model.name} model`);
+			new Notice(e.toString());
+		}
+	}
+
+	static refreshInstance(fallback: boolean) {
+		ollama = new Ollama({
+			host: !fallback
+				? settings.aiAdapterSettings.ollamaSettings.url
+				: settings.aiAdapterSettings.ollamaSettings.fallbackUrl,
+			headers: {
+				Authorization: `Bearer ${settings.aiAdapterSettings.ollamaSettings.token}`,
+			},
+		});
+	}
+
+	setLastModel(model: Models) {
+		super.setLastModel(model);
+		settings.aiAdapterSettings.ollamaSettings.lastModel = model;
+	}
+
+	setLastImageModel(model: Models) {
+		super.setLastImageModel(model);
+		settings.aiAdapterSettings.ollamaSettings.lastImageModel = model;
+	}
+}

@@ -1,18 +1,29 @@
 import { App, Notice, PluginSettingTab, Setting } from "obsidian";
 import { clearCache } from "./cache";
-import AIImageAnalyzerPlugin, { getAIAdapter } from "./main";
-import { htmlDescription } from "./util";
+import AIImageAnalyzerPlugin from "./main";
+import { debugLog } from "./util";
+import {
+	AIAdapterPluginSettings,
+	generateSettings,
+} from "./ai-adapter/settings";
+import { DEFAULT_SETTINGS as AI_ADAPTER_DEFAULT_SETTINGS } from "./ai-adapter/settings";
+import {
+	setUnsubscribeFunctionSetting,
+	subscribeModelsChange,
+} from "./ai-adapter/globals";
 
 interface AIImageAnalyzerPluginSettings {
 	debug: boolean;
 	prompt: string;
 	autoClearCache: boolean;
+	aiAdapterSettings: AIAdapterPluginSettings;
 }
 
 const DEFAULT_SETTINGS: AIImageAnalyzerPluginSettings = {
 	debug: false,
 	prompt: "Describe the image. Just use Keywords. For example: cat, dog, tree. This must be Computer readable. The provided pictures are used in an notebook. Please provide at least 5 Keywords. It will be used to search for the image later.",
 	autoClearCache: true,
+	aiAdapterSettings: AI_ADAPTER_DEFAULT_SETTINGS,
 };
 
 export let settings: AIImageAnalyzerPluginSettings = Object.assign(
@@ -34,23 +45,18 @@ export class AIImageAnalyzerSettingsTab extends PluginSettingTab {
 	constructor(app: App, plugin: AIImageAnalyzerPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
+		setUnsubscribeFunctionSetting(
+			subscribeModelsChange(() => {
+				debugLog("Models changed, updating settings tab");
+				this.display();
+			}),
+		);
 	}
 
 	display(): void {
 		const { containerEl } = this;
 
 		containerEl.empty();
-
-		new Setting(containerEl)
-			.setName("Indexing")
-			.setHeading()
-			.setDesc(
-				htmlDescription(
-					getAIAdapter()
-						? `<br/>👍 You have installed <a href="https://github.com/Swaggeroo/obsidian-ai-adapter">AI Adapter</a>, it is required for this plugin to function.`
-						: `<br/>⚠️ AI image analyzer requires <a href="https://github.com/Swaggeroo/obsidian-ai-adapter">AI Adapter</a>`,
-				),
-			);
 
 		new Setting(containerEl)
 			.setName("Clear cache")
@@ -71,6 +77,10 @@ export class AIImageAnalyzerSettingsTab extends PluginSettingTab {
 					await saveSettings(this.plugin);
 				}),
 			);
+
+		// AI Adapter settings
+		new Setting(containerEl).setName("AI Settings").setHeading();
+		generateSettings(containerEl, this.plugin);
 
 		new Setting(containerEl).setName("Advanced").setHeading();
 

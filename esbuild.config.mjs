@@ -32,12 +32,14 @@ const context = await esbuild.context({
 		"@lezer/lr",
 		...builtins,
 	],
+	platform: "node",
 	format: "cjs",
 	target: "es2018",
 	logLevel: "info",
 	sourcemap: prod ? false : "inline",
 	treeShaking: true,
 	outfile: "main.js",
+	minify: prod,
 });
 
 if (prod) {

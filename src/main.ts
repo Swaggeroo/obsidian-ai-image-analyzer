@@ -1,31 +1,22 @@
 import { MenuItem, Notice, Plugin, TFile } from "obsidian";
-import { isInCache, removeFromCache } from "./cache";
-import {
-	analyzeImage,
-	analyzeImageWithNotice,
-	analyzeToClipboard,
-} from "./analyserManager";
+import { removeFromCache } from "./cache";
+import { analyzeImageWithNotice, analyzeToClipboard } from "./analyserManager";
 import { debugLog, isImageFile } from "./util";
 import { AIImageAnalyzerSettingsTab, loadSettings } from "./settings";
 import { imagesProcessQueue } from "./globals";
-import { AIAdapterAPI } from "./types";
-
-export type AIImageAnalyzerAPI = {
-	analyzeImage: (file: TFile) => Promise<string>;
-	canBeAnalyzed: (file: TFile) => boolean;
-	isInCache: (file: TFile) => Promise<boolean>;
-};
+import {
+	processQueue,
+	setProvider,
+	unsubscribeFunctionSetting,
+} from "./ai-adapter/globals";
+import { initProvider } from "./ai-adapter/util";
 
 export default class AIImageAnalyzerPlugin extends Plugin {
-	public api: AIImageAnalyzerAPI = {
-		analyzeImage: analyzeImage,
-		canBeAnalyzed: isImageFile,
-		isInCache: isInCache,
-	};
-
 	async onload() {
 		debugLog("loading ai image analyzer plugin");
 		await loadSettings(this);
+
+		setProvider(initProvider());
 
 		this.addCommand({
 			id: "analyze-image-to-clipboard",
@@ -124,20 +115,12 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 
 	onunload() {
 		imagesProcessQueue.clear();
+		processQueue.clear();
+		if (unsubscribeFunctionSetting) {
+			unsubscribeFunctionSetting();
+		}
 		debugLog("unloading ai image analyzer plugin");
 	}
-}
-
-export function getAIAdapter(): AIAdapterAPI | undefined {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const adapter = (this.app as any).plugins?.plugins?.["ai-adapter"]?.api;
-	if (!adapter) {
-		new Notice(
-			"AI Adapter plugin not found, please install it to use this plugin. See settings for more information.",
-			10000,
-		);
-	}
-	return adapter;
 }
 
 function getActiveFile(): TFile | null {

@@ -14,8 +14,8 @@
 	"author": "",
 	"license": "GPL-3.0",
 	"devDependencies": {
-		"@eslint/eslintrc": "^3.3.0",
-		"@eslint/js": "^9.22.0",
+		"@eslint/eslintrc": "^3.3.1",
+		"@eslint/js": "^9.39.1",
 		"@types/node": "22.13.8",
 		"@typescript-eslint/eslint-plugin": "8.26.0",
 		"@typescript-eslint/parser": "8.26.0",
@@ -30,7 +30,8 @@
 		"typescript": "5.7.3"
 	},
 	"dependencies": {
-		"canvas": "^3.1.0",
-		"p-queue": "^8.1.0"
+		"@google/genai": "^1.29.0",
+		"ollama": "^0.6.2",
+		"p-queue": "^9.0.0"
 	}
 }

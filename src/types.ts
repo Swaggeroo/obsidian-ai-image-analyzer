@@ -3,8 +3,3 @@ export type AnalyzedText = {
 	text: string;
 	libVersion: string;
 };
-
-export type AIAdapterAPI = {
-	query: (prompt: string) => Promise<string>;
-	queryWithImage: (prompt: string, image: string) => Promise<string>;
-};

@@ -1,6 +1,5 @@
 import { arrayBufferToBase64, TFile } from "obsidian";
 import { settings } from "./settings";
-import { createCanvas, loadImage } from "canvas";
 
 export function debugLog(message: object | string) {
 	if (settings.debug) {
@@ -36,23 +35,40 @@ export async function readFile(file: TFile): Promise<string> {
 		debugLog("Converting SVG to PNG");
 
 		try {
-			// Read the SVG file content
 			const svgData: string = await this.app.vault.adapter.read(
 				file.path,
 			);
 
-			const canvas = createCanvas(1000, 1000);
-			const context = canvas.getContext("2d");
+			return await new Promise<string>((resolve, reject) => {
+				const canvas = document.createElement("canvas");
+				canvas.width = 1000;
+				canvas.height = 1000;
+				const context = canvas.getContext("2d");
 
-			// Load the SVG as an image
-			const svgImage = await loadImage(
-				`data:image/svg+xml;base64,${Buffer.from(svgData).toString("base64")}`,
-			);
+				if (!context) {
+					reject(new Error("Could not get canvas context"));
+					return;
+				}
 
-			// Draw the SVG onto the canvas
-			context.drawImage(svgImage, 0, 0, 1000, 1000);
+				const image = new Image();
+				image.onload = () => {
+					try {
+						context.drawImage(image, 0, 0, 1000, 1000);
+						const dataUrl = canvas.toDataURL("image/png");
+						resolve(dataUrl.split(",")[1]);
+					} catch (err) {
+						reject(err);
+					}
+				};
+				image.onerror = (error) => {
+					console.error("Error loading SVG image:", error);
+					reject(error);
+				};
 
-			return canvas.toDataURL("image/png").split(",")[1];
+				// Use a data URL; btoa is fine for typical SVG content — if you expect
+				// Unicode in SVG, consider using a proper base64 encoder.
+				image.src = `data:image/svg+xml;base64,${btoa(svgData)}`;
+			});
 		} catch (error) {
 			console.error("Error converting SVG to PNG:", error);
 			throw error;

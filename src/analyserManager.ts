@@ -3,7 +3,7 @@ import { isInCache, readCache, removeFromCache, writeCache } from "./cache";
 import { debugLog, isImageFile, readFile } from "./util";
 import { settings } from "./settings";
 import { imagesProcessQueue } from "./globals";
-import { getAIAdapter } from "./main";
+import { queryWithImage } from "./ai-adapter/api";
 
 export async function analyzeImage(file: TFile): Promise<string> {
 	try {
@@ -42,10 +42,7 @@ async function analyzeImageHandling(file: TFile): Promise<string> {
 	try {
 		const data: string = await readFile(file);
 
-		const response = await getAIAdapter()?.queryWithImage(
-			settings.prompt,
-			data,
-		);
+		const response = await queryWithImage(settings.prompt, data);
 		debugLog(response ?? "No response");
 
 		if (!response) {

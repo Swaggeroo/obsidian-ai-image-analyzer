@@ -25,6 +25,7 @@ export async function query(prompt: string): Promise<string> {
 	} catch (e) {
 		if (provider instanceof OllamaProvider) {
 			provider.abortCurrentRequest();
+			OllamaProvider.refreshInstance();
 		}
 		debugLog(context, e);
 		return Promise.reject(e);
@@ -48,6 +49,7 @@ export async function queryWithImage(
 	} catch (e) {
 		if (provider instanceof OllamaProvider) {
 			provider.abortCurrentRequest();
+			OllamaProvider.refreshInstance();
 		}
 		debugLog(context, e);
 		return Promise.reject(e);

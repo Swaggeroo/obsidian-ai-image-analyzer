@@ -10,7 +10,6 @@ import { saveSettings, settings } from "../../settings";
 const context = "ai-adapter/providers/ollamaProvider";
 
 let ollama: Ollama;
-let fallback: boolean = false;
 
 export type OllamaSettings = {
 	lastModel: Models;
@@ -29,12 +28,14 @@ export const DEFAULT_OLLAMA_SETTINGS: OllamaSettings = {
 };
 
 export class OllamaProvider extends Provider {
+	private static fallback: boolean = false;
+
 	constructor() {
 		super();
 		this.lastModel = settings.aiAdapterSettings.ollamaSettings.lastModel;
 		this.lastImageModel =
 			settings.aiAdapterSettings.ollamaSettings.lastImageModel;
-		OllamaProvider.refreshInstance(fallback);
+		OllamaProvider.refreshInstance();
 		this.checkOllama().then((success) => {
 			debugLog(context, "Ollama check success: " + success);
 		});
@@ -67,7 +68,7 @@ export class OllamaProvider extends Provider {
 							value = DEFAULT_OLLAMA_SETTINGS.url;
 						}
 						settings.aiAdapterSettings.ollamaSettings.url = value;
-						OllamaProvider.refreshInstance(fallback);
+						OllamaProvider.refreshInstance();
 						this.checkOllama().then((success) => {
 							debugLog(
 								context,
@@ -90,7 +91,7 @@ export class OllamaProvider extends Provider {
 					.onChange(async (value) => {
 						settings.aiAdapterSettings.ollamaSettings.fallbackUrl =
 							value;
-						OllamaProvider.refreshInstance(fallback);
+						OllamaProvider.refreshInstance();
 						this.checkOllama().then((success) => {
 							debugLog(
 								context,
@@ -118,7 +119,7 @@ export class OllamaProvider extends Provider {
 							return;
 						}
 						settings.aiAdapterSettings.ollamaSettings.token = value;
-						OllamaProvider.refreshInstance(fallback);
+						OllamaProvider.refreshInstance();
 						await saveSettings(plugin);
 					}),
 			);
@@ -223,13 +224,13 @@ export class OllamaProvider extends Provider {
 		} catch (e) {
 			debugLog(context, e);
 			if (
-				!fallback &&
+				!OllamaProvider.fallback &&
 				settings.aiAdapterSettings.ollamaSettings.fallbackUrl?.length >
 					0
 			) {
-				fallback = true;
+				OllamaProvider.fallback = true;
 				debugLog(context, "Falling back to fallback URL");
-				OllamaProvider.refreshInstance(true);
+				OllamaProvider.refreshInstance();
 				return await this.checkOllama();
 			}
 			new Notice("Error connecting to ollama.");
@@ -279,9 +280,15 @@ export class OllamaProvider extends Provider {
 		}
 	}
 
-	static refreshInstance(fallback: boolean) {
+	static refreshInstance() {
+		debugLog(
+			context,
+			"Refreshing Ollama instance (fallback: " +
+				OllamaProvider.fallback +
+				")",
+		);
 		ollama = new Ollama({
-			host: !fallback
+			host: !this.fallback
 				? settings.aiAdapterSettings.ollamaSettings.url
 				: settings.aiAdapterSettings.ollamaSettings.fallbackUrl,
 			headers: {

@@ -4,6 +4,8 @@ import { debugLog, isImageFile, readFile } from "./util";
 import { settings } from "./settings";
 import { imagesProcessQueue, runWithTimeout } from "./globals";
 import { queryWithImage } from "./ai-adapter/api";
+import { provider } from "./ai-adapter/globals";
+import { OllamaProvider } from "./ai-adapter/providers/ollamaProvider";
 
 const context = "analyserManager";
 
@@ -33,6 +35,10 @@ async function analyzeImageTask(file: TFile): Promise<string> {
 		debugLog(context, err);
 		if (!retriedImages.has(key)) {
 			retriedImages.add(key);
+			if (provider instanceof OllamaProvider) {
+				OllamaProvider.refreshInstance();
+			}
+			OllamaProvider.abortCurrentOllamaRequest();
 			debugLog(context, `Retrying image once: ${key}`);
 			try {
 				return await runWithTimeout(
@@ -66,8 +72,6 @@ async function analyzeImageHandling(file: TFile): Promise<string> {
 			debugLog(context, "Failed to read cache");
 		}
 	}
-
-	debugLog(context, file);
 
 	try {
 		const data: string = await readFile(file);

@@ -29,6 +29,7 @@ export const DEFAULT_OLLAMA_SETTINGS: OllamaSettings = {
 
 export class OllamaProvider extends Provider {
 	private static fallback: boolean = false;
+	private static currentOllamaController: AbortController | undefined;
 
 	constructor() {
 		super();
@@ -287,6 +288,11 @@ export class OllamaProvider extends Provider {
 				OllamaProvider.fallback +
 				")",
 		);
+
+		if (ollama !== undefined) {
+			ollama.abort();
+		}
+		OllamaProvider.abortCurrentOllamaRequest();
 		ollama = new Ollama({
 			host: !this.fallback
 				? settings.aiAdapterSettings.ollamaSettings.url
@@ -294,6 +300,7 @@ export class OllamaProvider extends Provider {
 			headers: {
 				Authorization: `Bearer ${settings.aiAdapterSettings.ollamaSettings.token}`,
 			},
+			fetch: OllamaProvider.ollamaFetch,
 		});
 	}
 
@@ -307,7 +314,58 @@ export class OllamaProvider extends Provider {
 		settings.aiAdapterSettings.ollamaSettings.lastImageModel = model;
 	}
 
-	abortCurrentRequest() {
-		ollama.abort();
+	shutdown(): void {
+		debugLog(context, "Shutting down Ollama instance");
+		OllamaProvider.abortCurrentOllamaRequest();
+		if (ollama !== undefined) {
+			ollama.abort();
+		}
+	}
+
+	static ollamaFetch(input: never, init?: RequestInit): Promise<Response> {
+		const controller = new AbortController();
+
+		// If caller provided a signal, forward its abort to our controller so both work
+		if (init?.signal) {
+			const callerSignal = init.signal;
+			if (callerSignal.aborted) {
+				controller.abort();
+			} else {
+				const onAbort = () => controller.abort();
+				callerSignal.addEventListener("abort", onAbort, { once: true });
+			}
+		}
+
+		OllamaProvider.currentOllamaController = controller;
+		const newInit: RequestInit = {
+			...(init || {}),
+			signal: controller.signal,
+		};
+
+		const promise = fetch(input, newInit);
+
+		// Clear stored controller when this request settles (if it's still the same)
+		promise
+			.finally(() => {
+				if (OllamaProvider.currentOllamaController === controller)
+					OllamaProvider.currentOllamaController = undefined;
+			})
+			.catch(() => {
+				/* swallow; caller will observe abort/error */
+			});
+
+		return promise;
+	}
+
+	static abortCurrentOllamaRequest(): void {
+		if (OllamaProvider.currentOllamaController) {
+			try {
+				OllamaProvider.currentOllamaController.abort();
+			} catch {
+				// ignore
+			} finally {
+				OllamaProvider.currentOllamaController = undefined;
+			}
+		}
 	}
 }

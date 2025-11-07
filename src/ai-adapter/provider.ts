@@ -15,6 +15,10 @@ export abstract class Provider {
 		plugin: AIImageAnalyzerPlugin,
 	): void;
 
+	shutdown(): void {
+		// Optional shutdown logic for providers
+	}
+
 	setLastModel(model: Models) {
 		this.lastModel = model;
 	}

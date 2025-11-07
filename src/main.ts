@@ -14,7 +14,6 @@ import {
 	unsubscribeFunctionSetting,
 } from "./ai-adapter/globals";
 import { initProvider } from "./ai-adapter/util";
-import { OllamaProvider } from "./ai-adapter/providers/ollamaProvider";
 
 const context = "main";
 
@@ -134,9 +133,7 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 
 	onunload() {
 		imagesProcessQueue.clear();
-		if (provider instanceof OllamaProvider) {
-			provider.abortCurrentRequest();
-		}
+		provider.shutdown();
 		if (unsubscribeFunctionSetting) {
 			unsubscribeFunctionSetting();
 		}

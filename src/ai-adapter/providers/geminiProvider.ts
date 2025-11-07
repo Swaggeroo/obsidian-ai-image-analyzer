@@ -5,7 +5,9 @@ import { Models } from "../types";
 import { notifyModelsChange, possibleModels } from "../globals";
 import { saveSettings, settings } from "../../settings";
 import { GoogleGenAI } from "@google/genai";
-import { debugLog } from "../util";
+import { debugLog } from "../../util";
+
+const context = "ai-adapter/providers/geminiProvider";
 
 let gemini: GoogleGenAI;
 
@@ -29,7 +31,7 @@ export class GeminiProvider extends Provider {
 			settings.aiAdapterSettings.geminiSettings.lastImageModel;
 		GeminiProvider.restartSession();
 		this.checkGemini().then((success) => {
-			debugLog("Gemini check success: " + success);
+			debugLog(context, "Gemini check success: " + success);
 		});
 	}
 
@@ -54,7 +56,10 @@ export class GeminiProvider extends Provider {
 							value;
 						GeminiProvider.restartSession();
 						this.checkGemini().then((success) => {
-							debugLog("Gemini check success: " + success);
+							debugLog(
+								context,
+								"Gemini check success: " + success,
+							);
 						});
 						await saveSettings(plugin);
 					}),
@@ -142,7 +147,7 @@ export class GeminiProvider extends Provider {
 						)
 					) {
 						possibleModels.push(geminiModel);
-						debugLog("Added model: " + geminiModel.name);
+						debugLog(context, "Added model: " + geminiModel.name);
 						updated = true;
 					}
 
@@ -160,19 +165,22 @@ export class GeminiProvider extends Provider {
 						)
 					) {
 						possibleModels.push(geminiTextModel);
-						debugLog("Added model: " + geminiTextModel.name);
+						debugLog(
+							context,
+							"Added model: " + geminiTextModel.name,
+						);
 						updated = true;
 					}
 				}
 			}
 
 			if (updated) {
-				debugLog("Models updated, notifying settings tab");
+				debugLog(context, "Models updated, notifying settings tab");
 				notifyModelsChange();
 			}
 			return true;
 		} catch (e) {
-			debugLog(e);
+			debugLog(context, e);
 			new Notice(
 				"Error connecting to gemini API. Please check your gemini API key.",
 			);

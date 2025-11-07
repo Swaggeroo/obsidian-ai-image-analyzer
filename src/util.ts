@@ -1,9 +1,28 @@
 import { arrayBufferToBase64, TFile } from "obsidian";
 import { settings } from "./settings";
 
-export function debugLog(message: object | string) {
+const context = "util";
+
+function stringToColor(str: string): string {
+	let hash = 0;
+	for (let i = 0; i < str.length; i++) {
+		hash = str.charCodeAt(i) + ((hash << 5) - hash);
+		// keep hash in 32-bit signed range
+		hash |= 0;
+	}
+	const hue = ((hash % 360) + 360) % 360;
+	return `hsl(${hue}, 70%, 50%)`;
+}
+
+export function debugLog(context: string, message: object | string) {
 	if (settings.debug) {
-		console.log(message);
+		const color = stringToColor(context);
+
+		console.log(
+			`[AIImageAnalyzer] %c[${context}]`,
+			`color: ${color}; font-weight: bold;`,
+			message,
+		);
 	}
 }
 
@@ -32,7 +51,7 @@ export function isImageFile(file: TFile): boolean {
 
 export async function readFile(file: TFile): Promise<string> {
 	if (file.path.endsWith(".svg")) {
-		debugLog("Converting SVG to PNG");
+		debugLog(context, "Converting SVG to PNG");
 
 		try {
 			const svgData: string = await this.app.vault.adapter.read(

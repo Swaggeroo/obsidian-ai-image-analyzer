@@ -16,6 +16,8 @@ import {
 import { initProvider } from "./ai-adapter/util";
 import { OllamaProvider } from "./ai-adapter/providers/ollamaProvider";
 
+const context = "main";
+
 export type AIImageAnalyzerAPI = {
 	analyzeImage: (file: TFile) => Promise<string>;
 	canBeAnalyzed: (file: TFile) => boolean;
@@ -30,7 +32,7 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 	};
 
 	async onload() {
-		debugLog("loading ai image analyzer plugin");
+		debugLog(context, "loading ai image analyzer plugin");
 		await loadSettings(this);
 
 		setProvider(initProvider());
@@ -138,7 +140,7 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 		if (unsubscribeFunctionSetting) {
 			unsubscribeFunctionSetting();
 		}
-		debugLog("unloading ai image analyzer plugin");
+		debugLog(context, "unloading ai image analyzer plugin");
 	}
 }
 

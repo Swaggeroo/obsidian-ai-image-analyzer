@@ -5,6 +5,8 @@ import { settings } from "./settings";
 import { imagesProcessQueue, runWithTimeout } from "./globals";
 import { queryWithImage } from "./ai-adapter/api";
 
+const context = "analyserManager";
+
 const retriedImages = new Set<string>();
 const ANALYZE_TIMEOUT_MS = 120000;
 
@@ -14,7 +16,7 @@ export async function analyzeImage(file: TFile): Promise<string> {
 			(await imagesProcessQueue.add(() => analyzeImageTask(file))) ?? ""
 		);
 	} catch (e) {
-		debugLog(e);
+		debugLog(context, e);
 		return "";
 	}
 }
@@ -27,19 +29,19 @@ async function analyzeImageTask(file: TFile): Promise<string> {
 			ANALYZE_TIMEOUT_MS,
 		);
 	} catch (err) {
-		debugLog(`analyzeImageHandling failed for ${key}:`);
-		debugLog(err);
+		debugLog(context, `analyzeImageHandling failed for ${key}:`);
+		debugLog(context, err);
 		if (!retriedImages.has(key)) {
 			retriedImages.add(key);
-			debugLog(`Retrying image once: ${key}`);
+			debugLog(context, `Retrying image once: ${key}`);
 			try {
 				return await runWithTimeout(
 					analyzeImageHandling(file),
 					ANALYZE_TIMEOUT_MS,
 				);
 			} catch (err2) {
-				debugLog(`Retry also failed for ${key}:`);
-				debugLog(err2);
+				debugLog(context, `Retry also failed for ${key}:`);
+				debugLog(context, err2);
 				throw err2;
 			}
 		}
@@ -48,30 +50,30 @@ async function analyzeImageTask(file: TFile): Promise<string> {
 }
 
 async function analyzeImageHandling(file: TFile): Promise<string> {
-	debugLog(`Analyzing image ${file.name}`);
+	debugLog(context, `Analyzing image ${file.name}`);
 	if (!isImageFile(file)) {
 		return Promise.reject("File is not an image");
 	}
 
 	if (await isInCache(file)) {
-		debugLog("Cache hit");
+		debugLog(context, "Cache hit");
 		const text = await readCache(file);
 		if (text && text.text !== "") {
-			debugLog("Reading from cache");
-			debugLog(`Image analyzed ${file.name}`);
+			debugLog(context, "Reading from cache");
+			debugLog(context, `Image analyzed ${file.name}`);
 			return Promise.resolve(text.text);
 		} else {
-			debugLog("Failed to read cache");
+			debugLog(context, "Failed to read cache");
 		}
 	}
 
-	debugLog(file);
+	debugLog(context, file);
 
 	try {
 		const data: string = await readFile(file);
 
 		const response = await queryWithImage(settings.prompt, data);
-		debugLog(response ?? "No response");
+		debugLog(context, "Response: " + (response ?? "null"));
 
 		if (!response) {
 			return Promise.reject("Failed to analyze image");
@@ -79,11 +81,11 @@ async function analyzeImageHandling(file: TFile): Promise<string> {
 
 		await writeCache(file, response);
 
-		debugLog(`Image analyzed ${file.name}`);
+		debugLog(context, `Image analyzed ${file.name}`);
 
 		return Promise.resolve(response);
 	} catch (e) {
-		debugLog(e);
+		debugLog(context, e);
 		return Promise.reject("Failed to analyze image");
 	}
 }
@@ -100,7 +102,7 @@ export async function analyzeImageWithNotice(file: TFile): Promise<string> {
 		new Notice("Image analyzed");
 		return text;
 	} catch (e) {
-		debugLog(e);
+		debugLog(context, e);
 		new Notice("Failed to analyze image");
 		new Notice(e.toString());
 		return "";
@@ -116,6 +118,6 @@ export async function analyzeToClipboard(file: TFile) {
 		await activeWindow.navigator.clipboard.writeText(text);
 		new Notice("Text copied to clipboard");
 	} catch (e) {
-		debugLog(e);
+		debugLog(context, e);
 	}
 }

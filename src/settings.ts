@@ -12,6 +12,8 @@ import {
 	subscribeModelsChange,
 } from "./ai-adapter/globals";
 
+const context = "settings";
+
 interface AIImageAnalyzerPluginSettings {
 	debug: boolean;
 	prompt: string;
@@ -47,7 +49,7 @@ export class AIImageAnalyzerSettingsTab extends PluginSettingTab {
 		this.plugin = plugin;
 		setUnsubscribeFunctionSetting(
 			subscribeModelsChange(() => {
-				debugLog("Models changed, updating settings tab");
+				debugLog(context, "Models changed, updating settings tab");
 				this.display();
 			}),
 		);

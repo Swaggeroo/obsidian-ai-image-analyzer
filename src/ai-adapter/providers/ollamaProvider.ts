@@ -1,14 +1,15 @@
 import { Provider } from "../provider";
 import { Notice, Setting } from "obsidian";
-import { debugLog } from "../util";
+import { debugLog } from "../../util";
 import { ChatResponse, Ollama } from "ollama";
 import { Models } from "../types";
 import { notifyModelsChange, possibleModels } from "../globals";
 import AIImageAnalyzerPlugin from "../../main";
 import { saveSettings, settings } from "../../settings";
 
+const context = "ai-adapter/providers/ollamaProvider";
+
 let ollama: Ollama;
-let fallback: boolean = false;
 
 export type OllamaSettings = {
 	lastModel: Models;
@@ -27,14 +28,16 @@ export const DEFAULT_OLLAMA_SETTINGS: OllamaSettings = {
 };
 
 export class OllamaProvider extends Provider {
+	private static fallback: boolean = false;
+
 	constructor() {
 		super();
 		this.lastModel = settings.aiAdapterSettings.ollamaSettings.lastModel;
 		this.lastImageModel =
 			settings.aiAdapterSettings.ollamaSettings.lastImageModel;
-		OllamaProvider.refreshInstance(fallback);
+		OllamaProvider.refreshInstance();
 		this.checkOllama().then((success) => {
-			debugLog("Ollama check success: " + success);
+			debugLog(context, "Ollama check success: " + success);
 		});
 	}
 
@@ -65,9 +68,12 @@ export class OllamaProvider extends Provider {
 							value = DEFAULT_OLLAMA_SETTINGS.url;
 						}
 						settings.aiAdapterSettings.ollamaSettings.url = value;
-						OllamaProvider.refreshInstance(fallback);
+						OllamaProvider.refreshInstance();
 						this.checkOllama().then((success) => {
-							debugLog("Ollama check success: " + success);
+							debugLog(
+								context,
+								"Ollama check success: " + success,
+							);
 						});
 						await saveSettings(plugin);
 					}),
@@ -85,9 +91,12 @@ export class OllamaProvider extends Provider {
 					.onChange(async (value) => {
 						settings.aiAdapterSettings.ollamaSettings.fallbackUrl =
 							value;
-						OllamaProvider.refreshInstance(fallback);
+						OllamaProvider.refreshInstance();
 						this.checkOllama().then((success) => {
-							debugLog("Ollama check success: " + success);
+							debugLog(
+								context,
+								"Ollama check success: " + success,
+							);
 						});
 						await saveSettings(plugin);
 					}),
@@ -110,7 +119,7 @@ export class OllamaProvider extends Provider {
 							return;
 						}
 						settings.aiAdapterSettings.ollamaSettings.token = value;
-						OllamaProvider.refreshInstance(fallback);
+						OllamaProvider.refreshInstance();
 						await saveSettings(plugin);
 					}),
 			);
@@ -138,7 +147,7 @@ export class OllamaProvider extends Provider {
 	private async checkOllama(): Promise<boolean> {
 		try {
 			const models = await ollama.list();
-			debugLog(models);
+			debugLog(context, models);
 			let updated = false;
 			for (const model of models.models) {
 				const capabilities = (await ollama.show({ model: model.name }))
@@ -164,7 +173,7 @@ export class OllamaProvider extends Provider {
 						provider: "ollama",
 						imageReady: false,
 					});
-					debugLog("Added model: " + name);
+					debugLog(context, "Added model: " + name);
 					updated = true;
 				}
 
@@ -180,13 +189,13 @@ export class OllamaProvider extends Provider {
 						provider: "ollama",
 						imageReady: true,
 					});
-					debugLog("Added image model: " + name);
+					debugLog(context, "Added image model: " + name);
 					updated = true;
 				}
 			}
 
 			if (updated) {
-				debugLog("Models updated, notifying settings tab");
+				debugLog(context, "Models updated, notifying settings tab");
 				notifyModelsChange();
 			}
 
@@ -197,7 +206,7 @@ export class OllamaProvider extends Provider {
 						settings.aiAdapterSettings.selectedModel.model,
 				)
 			) {
-				debugLog("No text model found (currently not used)");
+				debugLog(context, "No text model found (currently not used)");
 				// Add Notice when it gets used
 			}
 			if (
@@ -213,15 +222,15 @@ export class OllamaProvider extends Provider {
 			}
 			return true;
 		} catch (e) {
-			debugLog(e);
+			debugLog(context, e);
 			if (
-				!fallback &&
+				!OllamaProvider.fallback &&
 				settings.aiAdapterSettings.ollamaSettings.fallbackUrl?.length >
 					0
 			) {
-				fallback = true;
-				debugLog("Falling back to fallback URL");
-				OllamaProvider.refreshInstance(true);
+				OllamaProvider.fallback = true;
+				debugLog(context, "Falling back to fallback URL");
+				OllamaProvider.refreshInstance();
 				return await this.checkOllama();
 			}
 			new Notice("Error connecting to ollama.");
@@ -242,7 +251,7 @@ export class OllamaProvider extends Provider {
 			});
 			progressNotice = new Notice(`Pulling ${model.name} model 0%`, 0);
 			for await (const part of response) {
-				debugLog(part);
+				debugLog(context, part);
 				if (part.total !== null && part.completed !== null) {
 					const percentage = (part.completed / part.total) * 100;
 					if (
@@ -264,16 +273,22 @@ export class OllamaProvider extends Provider {
 			progressNotice.hide();
 			new Notice(`${model.name} model pulled successfully`);
 		} catch (e) {
-			debugLog(e);
+			debugLog(context, e);
 			progressNotice?.hide();
 			new Notice(`Failed to pull ${model.name} model`);
 			new Notice(e.toString());
 		}
 	}
 
-	static refreshInstance(fallback: boolean) {
+	static refreshInstance() {
+		debugLog(
+			context,
+			"Refreshing Ollama instance (fallback: " +
+				OllamaProvider.fallback +
+				")",
+		);
 		ollama = new Ollama({
-			host: !fallback
+			host: !this.fallback
 				? settings.aiAdapterSettings.ollamaSettings.url
 				: settings.aiAdapterSettings.ollamaSettings.fallbackUrl,
 			headers: {

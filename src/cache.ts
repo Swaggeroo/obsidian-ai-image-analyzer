@@ -2,6 +2,7 @@ import { createHash } from "crypto";
 import { TFile } from "obsidian";
 import { libVersion } from "./globals";
 import { AnalyzedText } from "./types";
+import { debugLog } from "./util";
 
 export function getCacheBasePath(): string {
 	// @ts-ignore
@@ -23,6 +24,10 @@ export async function isInCache(file: TFile): Promise<boolean> {
 }
 
 export async function writeCache(file: TFile, text: string): Promise<void> {
+	if (text.length === 0) {
+		return;
+	}
+
 	const path = getCachePath(file);
 
 	if (!(await this.app.vault.adapter.exists(getCacheBasePath()))) {
@@ -38,11 +43,17 @@ export async function writeCache(file: TFile, text: string): Promise<void> {
 }
 
 export async function readCache(file: TFile): Promise<AnalyzedText | null> {
-	const path = getCachePath(file);
 	try {
-		if (await this.app.vault.adapter.exists(path)) {
+		if (await isInCache(file)) {
+			const path = getCachePath(file);
 			const raw = await this.app.vault.adapter.read(path);
-			return JSON.parse(raw) as AnalyzedText;
+			const text = JSON.parse(raw) as AnalyzedText;
+			if (text.text.length === 0) {
+				debugLog("Cache entry is empty, removing");
+				await removeFromCache(file);
+				return null;
+			}
+			return text;
 		}
 	} catch (e) {
 		console.error(e);

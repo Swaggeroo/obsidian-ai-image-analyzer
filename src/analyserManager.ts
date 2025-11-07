@@ -1,19 +1,49 @@
 import { Notice, TFile } from "obsidian";
-import { isInCache, readCache, removeFromCache, writeCache } from "./cache";
+import { isInCache, readCache, writeCache } from "./cache";
 import { debugLog, isImageFile, readFile } from "./util";
 import { settings } from "./settings";
-import { imagesProcessQueue } from "./globals";
+import { imagesProcessQueue, runWithTimeout } from "./globals";
 import { queryWithImage } from "./ai-adapter/api";
+
+const retriedImages = new Set<string>();
+const ANALYZE_TIMEOUT_MS = 120000;
 
 export async function analyzeImage(file: TFile): Promise<string> {
 	try {
 		return (
-			(await imagesProcessQueue.add(() => analyzeImageHandling(file))) ??
-			""
+			(await imagesProcessQueue.add(() => analyzeImageTask(file))) ?? ""
 		);
 	} catch (e) {
 		debugLog(e);
 		return "";
+	}
+}
+
+async function analyzeImageTask(file: TFile): Promise<string> {
+	const key = file.path;
+	try {
+		return await runWithTimeout(
+			analyzeImageHandling(file),
+			ANALYZE_TIMEOUT_MS,
+		);
+	} catch (err) {
+		debugLog(`analyzeImageHandling failed for ${key}:`);
+		debugLog(err);
+		if (!retriedImages.has(key)) {
+			retriedImages.add(key);
+			debugLog(`Retrying image once: ${key}`);
+			try {
+				return await runWithTimeout(
+					analyzeImageHandling(file),
+					ANALYZE_TIMEOUT_MS,
+				);
+			} catch (err2) {
+				debugLog(`Retry also failed for ${key}:`);
+				debugLog(err2);
+				throw err2;
+			}
+		}
+		throw err;
 	}
 }
 
@@ -32,8 +62,6 @@ async function analyzeImageHandling(file: TFile): Promise<string> {
 			return Promise.resolve(text.text);
 		} else {
 			debugLog("Failed to read cache");
-			debugLog("Removing from cache");
-			await removeFromCache(file);
 		}
 	}
 

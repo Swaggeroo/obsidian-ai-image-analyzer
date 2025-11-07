@@ -291,4 +291,8 @@ export class OllamaProvider extends Provider {
 		super.setLastImageModel(model);
 		settings.aiAdapterSettings.ollamaSettings.lastImageModel = model;
 	}
+
+	abortCurrentRequest() {
+		ollama.abort();
+	}
 }

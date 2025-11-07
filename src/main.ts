@@ -9,11 +9,12 @@ import { debugLog, isImageFile } from "./util";
 import { AIImageAnalyzerSettingsTab, loadSettings } from "./settings";
 import { imagesProcessQueue } from "./globals";
 import {
-	processQueue,
+	provider,
 	setProvider,
 	unsubscribeFunctionSetting,
 } from "./ai-adapter/globals";
 import { initProvider } from "./ai-adapter/util";
+import { OllamaProvider } from "./ai-adapter/providers/ollamaProvider";
 
 export type AIImageAnalyzerAPI = {
 	analyzeImage: (file: TFile) => Promise<string>;
@@ -131,7 +132,9 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 
 	onunload() {
 		imagesProcessQueue.clear();
-		processQueue.clear();
+		if (provider instanceof OllamaProvider) {
+			provider.abortCurrentRequest();
+		}
 		if (unsubscribeFunctionSetting) {
 			unsubscribeFunctionSetting();
 		}

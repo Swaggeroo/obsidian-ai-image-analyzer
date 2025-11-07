@@ -1,5 +1,4 @@
 import { Models } from "./types";
-import PQueue from "p-queue";
 import { Provider } from "./provider";
 
 export function setProvider(p: Provider): void {
@@ -118,8 +117,6 @@ export const possibleModels: Models[] = [
 	// 	provider: "testing",
 	// },
 ];
-
-export const processQueue = new PQueue({ concurrency: 1, timeout: 600000 });
 
 export let unsubscribeFunctionSetting: (() => void) | null = null;
 export function setUnsubscribeFunctionSetting(fn: (() => void) | null) {

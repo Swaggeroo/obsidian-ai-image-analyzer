@@ -1,27 +1,30 @@
-import { processQueue, provider } from "./globals";
-import { debugLog } from "./util";
+import { provider } from "./globals";
+import { checkProviderReady, debugLog } from "./util";
 import { Notice } from "obsidian";
+import { OllamaProvider } from "./providers/ollamaProvider";
 
 export async function query(prompt: string): Promise<string> {
-	if (!provider) {
-		debugLog("Provider not initialized");
-		new Notice("Provider not initialized");
-		return "";
-	}
+	checkProviderReady();
 
 	try {
-		const response: string =
-			(await processQueue.add(() => provider.queryHandling(prompt))) ??
-			"";
+		const response = await provider.queryHandling(prompt);
+		if (response.length === 0) {
+			debugLog("Empty response from provider");
+			return Promise.reject("Empty response from provider");
+		}
+
 		if (response.startsWith("[AI-ERROR]")) {
 			new Notice(response.replace("[AI-ERROR]", ""));
 			debugLog("AI Error: " + response);
-			return "";
+			return Promise.reject(response);
 		}
 		return response;
 	} catch (e) {
+		if (provider instanceof OllamaProvider) {
+			provider.abortCurrentRequest();
+		}
 		debugLog(e);
-		return "";
+		return Promise.reject(e);
 	}
 }
 
@@ -29,20 +32,21 @@ export async function queryWithImage(
 	prompt: string,
 	image: string,
 ): Promise<string> {
-	if (!provider) {
-		debugLog("Provider not initialized");
-		new Notice("Provider not initialized");
-		return "";
-	}
+	checkProviderReady();
 
 	try {
-		return (
-			(await processQueue.add(() =>
-				provider.queryWithImageHandling(prompt, image),
-			)) ?? ""
-		);
+		const response = await provider.queryWithImageHandling(prompt, image);
+		if (response.length === 0) {
+			debugLog("Empty response from provider");
+			return Promise.reject("Empty response from provider");
+		}
+
+		return response;
 	} catch (e) {
+		if (provider instanceof OllamaProvider) {
+			provider.abortCurrentRequest();
+		}
 		debugLog(e);
-		return "";
+		return Promise.reject(e);
 	}
 }

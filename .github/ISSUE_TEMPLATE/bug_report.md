@@ -14,7 +14,7 @@ assignees: ""
 - [ ] Added the error log
 
 **Error Log**
-Please Paste the log from `ctrl + shift + I`
+Please activate debug log in plugin setting and paste the log from `ctrl + shift + I`
 
 ```
 [logs]
@@ -38,6 +38,7 @@ Steps to reproduce the behavior:
 **Environment**
 
 - Obsidian version:
+- Provider used:
 - Ollama version:
 - Plugin version:
 - OS:

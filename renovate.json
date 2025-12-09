@@ -3,5 +3,21 @@
   	"reviewers": ["Swaggeroo"],
 	"extends": [
 		"config:recommended"
+	],
+	"packageRules": [
+	    {
+	      "matchUpdateTypes": [
+	        "patch",
+	        "minor"
+	      ],
+		  "matchCurrentVersion": ">=1.0.0",
+	      "automerge": true
+	    },
+		{
+	      "matchUpdateTypes": [
+	        "minor"
+	      ],
+	      "automerge": true
+	    }
 	]
 }

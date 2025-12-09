@@ -20,7 +20,7 @@
 		"@typescript-eslint/eslint-plugin": "8.49.0",
 		"@typescript-eslint/parser": "8.49.0",
 		"builtin-modules": "5.0.0",
-		"esbuild": "0.25.12",
+		"esbuild": "0.27.1",
 		"eslint": "9.39.1",
 		"eslint-config-prettier": "10.1.8",
 		"eslint-plugin-obsidianmd": "^0.1.8",

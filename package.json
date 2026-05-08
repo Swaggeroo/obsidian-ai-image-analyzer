@@ -14,25 +14,25 @@
 	"author": "",
 	"license": "GPL-3.0",
 	"devDependencies": {
-		"@eslint/eslintrc": "^3.3.3",
-		"@eslint/js": "^9.39.1",
-		"@types/node": "24.12.2",
-		"@typescript-eslint/eslint-plugin": "8.59.1",
-		"@typescript-eslint/parser": "8.59.1",
+		"@eslint/eslintrc": "^3.3.5",
+		"@eslint/js": "^10.0.1",
+		"@types/node": "25.6.2",
+		"@typescript-eslint/eslint-plugin": "8.59.2",
+		"@typescript-eslint/parser": "8.59.2",
 		"builtin-modules": "5.1.0",
 		"esbuild": "0.28.0",
-		"eslint": "9.39.4",
+		"eslint": "10.3.0",
 		"eslint-config-prettier": "10.1.8",
-		"eslint-plugin-obsidianmd": "^0.1.9",
+		"eslint-plugin-obsidianmd": "^0.2.9",
 		"eslint-plugin-prettier": "5.5.5",
 		"obsidian": "1.12.3",
 		"prettier": "3.8.3",
 		"tslib": "2.8.1",
-		"typescript": "5.9.3"
+		"typescript": "6.0.3"
 	},
 	"dependencies": {
-		"@google/genai": "^1.32.0",
+		"@google/genai": "^2.0.0",
 		"ollama": "^0.6.3",
-		"p-queue": "^9.0.1"
+		"p-queue": "^9.2.0"
 	}
 }

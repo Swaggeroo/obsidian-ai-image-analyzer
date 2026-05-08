@@ -62,6 +62,7 @@ export class OllamaProvider extends Provider {
 			.setDesc("Set the URL for the ollama server")
 			.addText((text) =>
 				text
+					// eslint-disable-next-line obsidianmd/ui/sentence-case
 					.setPlaceholder("Enter the host (http://127.0.0.1:11434)")
 					.setValue(settings.aiAdapterSettings.ollamaSettings.url)
 					.onChange(async (value) => {
@@ -85,6 +86,7 @@ export class OllamaProvider extends Provider {
 			.setDesc("Set a fallback URL for the ollama server")
 			.addText((text) =>
 				text
+					// eslint-disable-next-line obsidianmd/ui/sentence-case
 					.setPlaceholder("Enter the host (http://127.0.0.1:11434)")
 					.setValue(
 						settings.aiAdapterSettings.ollamaSettings.fallbackUrl,

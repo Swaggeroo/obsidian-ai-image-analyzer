@@ -1,6 +1,5 @@
 {
 	"compilerOptions": {
-		"baseUrl": ".",
 		"inlineSourceMap": true,
 		"inlineSources": true,
 		"module": "ESNext",
@@ -13,7 +12,8 @@
 		"strictNullChecks": true,
 		"esModuleInterop": true,
 		"resolveJsonModule": true,
-		"lib": ["DOM", "ES5", "ES6", "ES7"]
+		"lib": ["DOM", "ES5", "ES6", "ES7"],
+		"ignoreDeprecations": "6.0"
 	},
 	"include": ["**/*.ts"]
 }

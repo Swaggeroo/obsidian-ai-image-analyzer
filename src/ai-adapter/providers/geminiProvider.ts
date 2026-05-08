@@ -180,11 +180,17 @@ export class GeminiProvider extends Provider {
 			}
 			return true;
 		} catch (e) {
-			debugLog(context, e);
+			const errMsg =
+				e instanceof Error
+					? e.message
+					: typeof e === "string"
+						? e
+						: JSON.stringify(e);
+			debugLog(context, errMsg);
 			new Notice(
 				"Error connecting to Gemini API. Please check your Gemini API key.",
 			);
-			new Notice(e.toString());
+			new Notice(errMsg);
 			return false;
 		}
 	}

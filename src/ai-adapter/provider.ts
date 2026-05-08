@@ -2,8 +2,10 @@ import { Models } from "./types";
 import AIImageAnalyzerPlugin from "../main";
 
 export abstract class Provider {
-	lastModel: Models;
-	lastImageModel: Models;
+	// These will be set by concrete providers; use definite assignment assertion
+	// to tell TypeScript that subclasses will initialize them.
+	lastModel!: Models;
+	lastImageModel!: Models;
 
 	abstract queryHandling(prompt: string): Promise<string>;
 	abstract queryWithImageHandling(

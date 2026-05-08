@@ -26,7 +26,13 @@ export async function query(prompt: string): Promise<string> {
 		if (provider instanceof OllamaProvider) {
 			OllamaProvider.refreshInstance();
 		}
-		debugLog(context, e);
+		const errMsg =
+			e instanceof Error
+				? e.message
+				: typeof e === "string"
+					? e
+					: JSON.stringify(e);
+		debugLog(context, errMsg);
 		return Promise.reject(e);
 	}
 }
@@ -49,7 +55,13 @@ export async function queryWithImage(
 		if (provider instanceof OllamaProvider) {
 			OllamaProvider.refreshInstance();
 		}
-		debugLog(context, e);
+		const errMsg =
+			e instanceof Error
+				? e.message
+				: typeof e === "string"
+					? e
+					: JSON.stringify(e);
+		debugLog(context, errMsg);
 		return Promise.reject(e);
 	}
 }

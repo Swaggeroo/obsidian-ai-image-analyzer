@@ -225,7 +225,13 @@ export class OllamaProvider extends Provider {
 			}
 			return true;
 		} catch (e) {
-			debugLog(context, e);
+			const errMsg =
+				e instanceof Error
+					? e.message
+					: typeof e === "string"
+						? e
+						: JSON.stringify(e);
+			debugLog(context, errMsg);
 			if (
 				!OllamaProvider.fallback &&
 				settings.aiAdapterSettings.ollamaSettings.fallbackUrl?.length >
@@ -237,7 +243,7 @@ export class OllamaProvider extends Provider {
 				return await this.checkOllama();
 			}
 			new Notice("Error connecting to ollama.");
-			new Notice(e.toString());
+			new Notice(errMsg);
 			return false;
 		}
 	}
@@ -276,10 +282,16 @@ export class OllamaProvider extends Provider {
 			progressNotice.hide();
 			new Notice(`${model.name} model pulled successfully`);
 		} catch (e) {
-			debugLog(context, e);
+			const errMsg =
+				e instanceof Error
+					? e.message
+					: typeof e === "string"
+						? e
+						: JSON.stringify(e);
+			debugLog(context, errMsg);
 			progressNotice?.hide();
 			new Notice(`Failed to pull ${model.name} model`);
-			new Notice(e.toString());
+			new Notice(errMsg);
 		}
 	}
 
@@ -324,7 +336,10 @@ export class OllamaProvider extends Provider {
 		}
 	}
 
-	static ollamaFetch(input: never, init?: RequestInit): Promise<Response> {
+	static ollamaFetch(
+		input: RequestInfo | URL,
+		init?: RequestInit,
+	): Promise<Response> {
 		const controller = new AbortController();
 
 		// If caller provided a signal, forward its abort to our controller so both work

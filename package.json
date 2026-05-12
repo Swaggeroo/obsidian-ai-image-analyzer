@@ -23,7 +23,7 @@
 		"esbuild": "0.28.0",
 		"eslint": "10.3.0",
 		"eslint-config-prettier": "10.1.8",
-		"eslint-plugin-obsidianmd": "^0.2.9",
+		"eslint-plugin-obsidianmd": "^0.3.0",
 		"eslint-plugin-prettier": "5.5.5",
 		"obsidian": "1.12.3",
 		"prettier": "3.8.3",

@@ -64,8 +64,8 @@ export function generateSettings(
 					),
 				)
 				.setValue(settings.aiAdapterSettings.provider)
-				.onChange(async (value: Providers) => {
-					settings.aiAdapterSettings.provider = value;
+				.onChange(async (value: string) => {
+					settings.aiAdapterSettings.provider = value as Providers;
 					setProvider(initProvider());
 
 					settings.aiAdapterSettings.selectedModel =

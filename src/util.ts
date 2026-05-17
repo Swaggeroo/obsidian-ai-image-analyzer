@@ -54,6 +54,7 @@ export async function readFile(file: TFile): Promise<string> {
 		debugLog(context, "Converting SVG to PNG");
 
 		try {
+			//@ts-ignore
 			const svgData: string = await this.app.vault.adapter.read(
 				file.path,
 			);

@@ -143,7 +143,9 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 
 function getActiveFile(): TFile | null {
 	return (
+		//@ts-ignore
 		this.app.workspace.activeEditor?.file ??
+		//@ts-ignore
 		this.app.workspace.getActiveFile()
 	);
 }

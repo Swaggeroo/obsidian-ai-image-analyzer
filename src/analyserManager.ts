@@ -18,7 +18,13 @@ export async function analyzeImage(file: TFile): Promise<string> {
 			(await imagesProcessQueue.add(() => analyzeImageTask(file))) ?? ""
 		);
 	} catch (e) {
-		debugLog(context, e);
+		const errMsg =
+			e instanceof Error
+				? e.message
+				: typeof e === "string"
+					? e
+					: JSON.stringify(e);
+		debugLog(context, errMsg);
 		return "";
 	}
 }
@@ -30,9 +36,15 @@ async function analyzeImageTask(file: TFile): Promise<string> {
 			analyzeImageHandling(file),
 			ANALYZE_TIMEOUT_MS,
 		);
-	} catch (err) {
+	} catch (e) {
+		const errMsg =
+			e instanceof Error
+				? e.message
+				: typeof e === "string"
+					? e
+					: JSON.stringify(e);
 		debugLog(context, `analyzeImageHandling failed for ${key}:`);
-		debugLog(context, err);
+		debugLog(context, errMsg);
 		if (!retriedImages.has(key)) {
 			retriedImages.add(key);
 			if (provider instanceof OllamaProvider) {
@@ -45,13 +57,19 @@ async function analyzeImageTask(file: TFile): Promise<string> {
 					analyzeImageHandling(file),
 					ANALYZE_TIMEOUT_MS,
 				);
-			} catch (err2) {
+			} catch (e2) {
+				const errMsg2 =
+					e2 instanceof Error
+						? e2.message
+						: typeof e2 === "string"
+							? e2
+							: JSON.stringify(e2);
 				debugLog(context, `Retry also failed for ${key}:`);
-				debugLog(context, err2);
-				throw err2;
+				debugLog(context, errMsg2);
+				throw e2;
 			}
 		}
-		throw err;
+		throw e;
 	}
 }
 
@@ -89,7 +107,13 @@ async function analyzeImageHandling(file: TFile): Promise<string> {
 
 		return Promise.resolve(response);
 	} catch (e) {
-		debugLog(context, e);
+		const errMsg =
+			e instanceof Error
+				? e.message
+				: typeof e === "string"
+					? e
+					: JSON.stringify(e);
+		debugLog(context, errMsg);
 		return Promise.reject("Failed to analyze image");
 	}
 }
@@ -106,9 +130,15 @@ export async function analyzeImageWithNotice(file: TFile): Promise<string> {
 		new Notice("Image analyzed");
 		return text;
 	} catch (e) {
-		debugLog(context, e);
+		const errMsg =
+			e instanceof Error
+				? e.message
+				: typeof e === "string"
+					? e
+					: JSON.stringify(e);
+		debugLog(context, errMsg);
 		new Notice("Failed to analyze image");
-		new Notice(e.toString());
+		new Notice(errMsg);
 		return "";
 	}
 }
@@ -122,6 +152,12 @@ export async function analyzeToClipboard(file: TFile) {
 		await activeWindow.navigator.clipboard.writeText(text);
 		new Notice("Text copied to clipboard");
 	} catch (e) {
-		debugLog(context, e);
+		const errMsg =
+			e instanceof Error
+				? e.message
+				: typeof e === "string"
+					? e
+					: JSON.stringify(e);
+		debugLog(context, errMsg);
 	}
 }

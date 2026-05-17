@@ -40,7 +40,7 @@ export class GeminiProvider extends Provider {
 
 		new Setting(containerEl)
 			.setName("Gemini API key")
-			.setDesc("Set your gemini API token")
+			.setDesc("Set your Gemini API token")
 			.addText((text) =>
 				text
 					.setValue(
@@ -180,11 +180,17 @@ export class GeminiProvider extends Provider {
 			}
 			return true;
 		} catch (e) {
-			debugLog(context, e);
+			const errMsg =
+				e instanceof Error
+					? e.message
+					: typeof e === "string"
+						? e
+						: JSON.stringify(e);
+			debugLog(context, errMsg);
 			new Notice(
-				"Error connecting to gemini API. Please check your gemini API key.",
+				"Error connecting to Gemini API. Please check your Gemini API key.",
 			);
-			new Notice(e.toString());
+			new Notice(errMsg);
 			return false;
 		}
 	}

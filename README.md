@@ -92,6 +92,7 @@ const text = await getAIImageAnalyser()?.analyzeImage(file);
 If you want to contribute to this plugin, you can do so by creating a pull request or an issue on the GitHub repository.
 
 ### Adding new providers
+
 You can find a example provider in `src/providers/exampleProvider.ts`.
 Just create a new file in the `src/providers` folder and implement the `Provider` interface like in the example.
 Then search for `[NEW PROVIDER]` in the codebase and modify the code accordingly.

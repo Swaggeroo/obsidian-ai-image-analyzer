@@ -32,7 +32,9 @@ export async function writeCache(file: TFile, text: string): Promise<void> {
 
 	const path = getCachePath(file);
 
+	//@ts-ignore
 	if (!(await this.app.vault.adapter.exists(getCacheBasePath()))) {
+		//@ts-ignore
 		await this.app.vault.adapter.mkdir(getCacheBasePath());
 	}
 
@@ -43,6 +45,7 @@ export async function writeCache(file: TFile, text: string): Promise<void> {
 	};
 
 	debugLog(context, `Writing cache entry for ${file.path}`);
+	//@ts-ignore
 	await this.app.vault.adapter.write(path, JSON.stringify(data));
 }
 
@@ -50,6 +53,7 @@ export async function readCache(file: TFile): Promise<AnalyzedText | null> {
 	try {
 		if (await isInCache(file)) {
 			const path = getCachePath(file);
+			//@ts-ignore
 			const raw = await this.app.vault.adapter.read(path);
 			const text = JSON.parse(raw) as AnalyzedText;
 			if (text.text.length === 0) {
@@ -71,14 +75,17 @@ export async function removeFromCache(file: TFile): Promise<void> {
 	const path = getCachePath(file);
 	if (await isInCache(file)) {
 		debugLog(context, `Removing cache entry for ${file.path}`);
+		//@ts-ignore
 		return await this.app.vault.adapter.remove(path);
 	}
 }
 
 export async function clearCache(): Promise<void> {
 	const path = getCacheBasePath();
+	//@ts-ignore
 	if (await this.app.vault.adapter.exists(path)) {
 		debugLog(context, `Clearing cache`);
+		//@ts-ignore
 		return await this.app.vault.adapter.rmdir(path, true);
 	}
 }

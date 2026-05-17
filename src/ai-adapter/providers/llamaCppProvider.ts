@@ -30,14 +30,24 @@ export const DEFAULT_LLAMA_CPP_SETTINGS: LlamaCppSettings = {
 	token: "",
 };
 
+function getLlamaCppSettings(): LlamaCppSettings {
+	if (!settings.aiAdapterSettings.llamaCppSettings) {
+		settings.aiAdapterSettings.llamaCppSettings = {
+			...DEFAULT_LLAMA_CPP_SETTINGS,
+		};
+	}
+
+	return settings.aiAdapterSettings.llamaCppSettings;
+}
+
 export class LlamaCppProvider extends Provider {
 	private static currentController: AbortController | undefined;
 
 	constructor() {
 		super();
-		this.lastModel = settings.aiAdapterSettings.llamaCppSettings.lastModel;
-		this.lastImageModel =
-			settings.aiAdapterSettings.llamaCppSettings.lastImageModel;
+		const llamaCppSettings = getLlamaCppSettings();
+		this.lastModel = llamaCppSettings.lastModel;
+		this.lastImageModel = llamaCppSettings.lastImageModel;
 
 		// ensure model list include llama.cpp's model
 		if (!possibleModels.some((m) => m.provider === "llama-cpp")) {
@@ -50,6 +60,8 @@ export class LlamaCppProvider extends Provider {
 	}
 
 	generateSettings(containerEl: HTMLElement, plugin: AIImageAnalyzerPlugin) {
+		const llamaCppSettings = getLlamaCppSettings();
+
 		new Setting(containerEl)
 			.setName("Llama.cpp (llama-server)")
 			.setHeading();
@@ -61,13 +73,14 @@ export class LlamaCppProvider extends Provider {
 			)
 			.addText((text) =>
 				text
+					// eslint-disable-next-line obsidianmd/ui/sentence-case
 					.setPlaceholder("http://127.0.0.1:8080")
-					.setValue(settings.aiAdapterSettings.llamaCppSettings.url)
+					.setValue(llamaCppSettings.url)
 					.onChange(async (value) => {
 						if (value.length === 0) {
 							value = DEFAULT_LLAMA_CPP_SETTINGS.url;
 						}
-						settings.aiAdapterSettings.llamaCppSettings.url = value;
+						llamaCppSettings.url = value;
 						this.checkConnection().then((success) => {
 							debugLog(
 								context,
@@ -86,7 +99,7 @@ export class LlamaCppProvider extends Provider {
 			.addText((text) =>
 				text
 					.setValue(
-						settings.aiAdapterSettings.llamaCppSettings.token !== ""
+						llamaCppSettings.token !== ""
 							? "••••••••••"
 							: "",
 					)
@@ -94,8 +107,7 @@ export class LlamaCppProvider extends Provider {
 						if (value.contains("•")) {
 							return;
 						}
-						settings.aiAdapterSettings.llamaCppSettings.token =
-							value;
+						llamaCppSettings.token = value;
 						await saveSettings(plugin);
 					}),
 			);
@@ -116,8 +128,9 @@ export class LlamaCppProvider extends Provider {
 	}
 
 	async queryHandling(prompt: string): Promise<string> {
-		const url = `${settings.aiAdapterSettings.llamaCppSettings.url}/v1/chat/completions`;
-		const token = settings.aiAdapterSettings.llamaCppSettings.token;
+		const llamaCppSettings = getLlamaCppSettings();
+		const url = `${llamaCppSettings.url}/v1/chat/completions`;
+		const token = llamaCppSettings.token;
 
 		const headers: Record<string, string> = {
 			"Content-Type": "application/json",
@@ -151,11 +164,17 @@ export class LlamaCppProvider extends Provider {
 			const data = await response.json();
 			return data.choices?.[0]?.message?.content || "";
 		} catch (e) {
-			debugLog(context, e);
-			if (e.name === "AbortError") {
+			const errMsg =
+				e instanceof Error
+					? e.message
+					: typeof e === "string"
+						? e
+						: (JSON.stringify(e) ?? String(e));
+			debugLog(context, errMsg);
+			if (e instanceof Error && e.name === "AbortError") {
 				return "[AI-ERROR] Request was aborted";
 			}
-			return `[AI-ERROR] ${e.message}`;
+			return `[AI-ERROR] ${errMsg}`;
 		} finally {
 			LlamaCppProvider.currentController = undefined;
 		}
@@ -165,8 +184,9 @@ export class LlamaCppProvider extends Provider {
 		prompt: string,
 		image: string,
 	): Promise<string> {
-		const url = `${settings.aiAdapterSettings.llamaCppSettings.url}/v1/chat/completions`;
-		const token = settings.aiAdapterSettings.llamaCppSettings.token;
+		const llamaCppSettings = getLlamaCppSettings();
+		const url = `${llamaCppSettings.url}/v1/chat/completions`;
+		const token = llamaCppSettings.token;
 
 		const headers: Record<string, string> = {
 			"Content-Type": "application/json",
@@ -214,11 +234,17 @@ export class LlamaCppProvider extends Provider {
 			const data = await response.json();
 			return data.choices?.[0]?.message?.content || "";
 		} catch (e) {
-			debugLog(context, e);
-			if (e.name === "AbortError") {
+			const errMsg =
+				e instanceof Error
+					? e.message
+					: typeof e === "string"
+						? e
+						: (JSON.stringify(e) ?? String(e));
+			debugLog(context, errMsg);
+			if (e instanceof Error && e.name === "AbortError") {
 				return "[AI-ERROR] Request was aborted";
 			}
-			return `[AI-ERROR] ${e.message}`;
+			return `[AI-ERROR] ${errMsg}`;
 		} finally {
 			LlamaCppProvider.currentController = undefined;
 		}
@@ -226,12 +252,12 @@ export class LlamaCppProvider extends Provider {
 
 	setLastModel(model: Models) {
 		super.setLastModel(model);
-		settings.aiAdapterSettings.llamaCppSettings.lastModel = model;
+		getLlamaCppSettings().lastModel = model;
 	}
 
 	setLastImageModel(model: Models) {
 		super.setLastImageModel(model);
-		settings.aiAdapterSettings.llamaCppSettings.lastImageModel = model;
+		getLlamaCppSettings().lastImageModel = model;
 	}
 
 	shutdown(): void {
@@ -240,8 +266,9 @@ export class LlamaCppProvider extends Provider {
 	}
 
 	private async checkConnection(): Promise<boolean> {
-		const url = `${settings.aiAdapterSettings.llamaCppSettings.url}/health`;
-		const token = settings.aiAdapterSettings.llamaCppSettings.token;
+		const llamaCppSettings = getLlamaCppSettings();
+		const url = `${llamaCppSettings.url}/health`;
+		const token = llamaCppSettings.token;
 
 		const headers: Record<string, string> = {};
 		if (token) {

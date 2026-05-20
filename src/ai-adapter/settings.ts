@@ -15,6 +15,10 @@ import {
 	DEFAULT_GEMINI_SETTINGS,
 	GeminiSettings,
 } from "./providers/geminiProvider";
+import {
+	DEFAULT_LMSTUDIO_SETTINGS,
+	LmStudioSettings,
+} from "./providers/lmstudioProvider"; // [NEW PROVIDER]
 import AIImageAnalyzerPlugin from "../main";
 import { saveSettings, settings } from "../settings";
 // import {DEFAULT_EXAMPLE_SETTINGS, ExampleSettings} from "./exampleProvider"; [NEW PROVIDER]
@@ -25,6 +29,7 @@ export type AIAdapterPluginSettings = {
 	selectedImageModel: Models;
 	ollamaSettings: OllamaSettings;
 	geminiSettings: GeminiSettings;
+	lmstudioSettings: LmStudioSettings; // [NEW PROVIDER]
 	// exampleSettings: ExampleSettings; [NEW PROVIDER]
 };
 
@@ -34,6 +39,7 @@ export const DEFAULT_SETTINGS: AIAdapterPluginSettings = {
 	selectedImageModel: possibleModels[0],
 	ollamaSettings: DEFAULT_OLLAMA_SETTINGS,
 	geminiSettings: DEFAULT_GEMINI_SETTINGS,
+	lmstudioSettings: DEFAULT_LMSTUDIO_SETTINGS, // [NEW PROVIDER]
 	// exampleSettings: DEFAULT_EXAMPLE_SETTINGS [NEW PROVIDER]
 };
 
@@ -41,6 +47,12 @@ export function generateSettings(
 	containerEl: HTMLElement,
 	plugin: AIImageAnalyzerPlugin,
 ) {
+	const providerDisplayNames: Record<Providers, string> = {
+		ollama: "Ollama",
+		gemini: "Gemini",
+		lmstudio: "LM Studio", // [NEW PROVIDER]
+	};
+
 	new Setting(containerEl)
 		.setName("Provider")
 		.setDesc("Select the provider to use")
@@ -49,7 +61,7 @@ export function generateSettings(
 				.addOptions(
 					providerNames.reduce(
 						(acc, provider) => {
-							acc[provider] = provider;
+							acc[provider] = providerDisplayNames[provider] ?? provider;
 							return acc;
 						},
 						{} as Record<Providers, string>,

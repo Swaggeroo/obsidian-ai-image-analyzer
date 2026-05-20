@@ -3,7 +3,7 @@ import { isInCache, readCache, writeCache } from "./cache";
 import { debugLog, isImageFile, readFile } from "./util";
 import { settings } from "./settings";
 import { imagesProcessQueue, runWithTimeout } from "./globals";
-import { queryWithImage } from "./ai-adapter/api";
+import { queryWithImage, abortCurrentRequest } from "./ai-adapter/api";
 import { provider } from "./ai-adapter/globals";
 import { OllamaProvider } from "./ai-adapter/providers/ollamaProvider";
 
@@ -50,7 +50,7 @@ async function analyzeImageTask(file: TFile): Promise<string> {
 			if (provider instanceof OllamaProvider) {
 				OllamaProvider.refreshInstance();
 			}
-			OllamaProvider.abortCurrentOllamaRequest();
+			abortCurrentRequest();
 			debugLog(context, `Retrying image once: ${key}`);
 			try {
 				return await runWithTimeout(

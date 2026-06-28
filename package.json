@@ -16,7 +16,7 @@
 	"devDependencies": {
 		"@eslint/eslintrc": "^3.3.5",
 		"@eslint/js": "^10.0.1",
-		"@types/node": "25.9.4",
+		"@types/node": "26.0.1",
 		"@typescript-eslint/eslint-plugin": "8.62.0",
 		"@typescript-eslint/parser": "8.62.0",
 		"builtin-modules": "5.3.0",

@@ -15,6 +15,12 @@ import {
 	DEFAULT_GEMINI_SETTINGS,
 	GeminiSettings,
 } from "./providers/geminiProvider";
+
+import {
+	DEFAULT_LLAMA_CPP_SETTINGS,
+	LlamaCppSettings,
+} from "./providers/llamaCppProvider";
+
 import AIImageAnalyzerPlugin from "../main";
 import { saveSettings, settings } from "../settings";
 // import {DEFAULT_EXAMPLE_SETTINGS, ExampleSettings} from "./exampleProvider"; [NEW PROVIDER]
@@ -25,6 +31,7 @@ export type AIAdapterPluginSettings = {
 	selectedImageModel: Models;
 	ollamaSettings: OllamaSettings;
 	geminiSettings: GeminiSettings;
+	llamaCppSettings: LlamaCppSettings;
 	// exampleSettings: ExampleSettings; [NEW PROVIDER]
 };
 
@@ -34,6 +41,7 @@ export const DEFAULT_SETTINGS: AIAdapterPluginSettings = {
 	selectedImageModel: possibleModels[0],
 	ollamaSettings: DEFAULT_OLLAMA_SETTINGS,
 	geminiSettings: DEFAULT_GEMINI_SETTINGS,
+	llamaCppSettings: DEFAULT_LLAMA_CPP_SETTINGS,
 	// exampleSettings: DEFAULT_EXAMPLE_SETTINGS [NEW PROVIDER]
 };
 

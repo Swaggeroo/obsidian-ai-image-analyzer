@@ -13,6 +13,7 @@ export type LlamaCppSettings = {
 	lastImageModel: Models;
 	url: string;
 	token: string;
+	temperature: number;
 };
 
 // llama.cpp use local model
@@ -28,6 +29,7 @@ export const DEFAULT_LLAMA_CPP_SETTINGS: LlamaCppSettings = {
 	lastImageModel: LLAMA_CPP_MODEL,
 	url: "http://127.0.0.1:8080",
 	token: "",
+	temperature: 0.7,
 };
 
 function getLlamaCppSettings(): LlamaCppSettings {
@@ -48,11 +50,6 @@ export class LlamaCppProvider extends Provider {
 		const llamaCppSettings = getLlamaCppSettings();
 		this.lastModel = llamaCppSettings.lastModel;
 		this.lastImageModel = llamaCppSettings.lastImageModel;
-
-		// ensure model list include llama.cpp's model
-		if (!possibleModels.some((m) => m.provider === "llama-cpp")) {
-			possibleModels.push(LLAMA_CPP_MODEL);
-		}
 
 		this.checkConnection().then((success) => {
 			debugLog(context, "llama.cpp check success: " + success);
@@ -125,6 +122,25 @@ export class LlamaCppProvider extends Provider {
 					}
 				}),
 			);
+
+		let tempSpan: HTMLSpanElement;
+		new Setting(containerEl)
+			.setName("Temperature")
+			.setDesc("Controls randomness in model output (0–2). Lower values produce more deterministic responses.")
+			.addSlider((slider) => {
+				slider
+					.setLimits(0, 2, 0.1)
+					.setValue(llamaCppSettings.temperature)
+					.onChange(async (value) => {
+						llamaCppSettings.temperature = value;
+						await saveSettings(plugin);
+					});
+				tempSpan = slider.sliderEl.parentElement!.createEl("span");
+				tempSpan.textContent = llamaCppSettings.temperature.toFixed(1);
+				slider.sliderEl.addEventListener("input", () => {
+					tempSpan.textContent = parseFloat(slider.sliderEl.value).toFixed(1);
+				});
+			});
 	}
 
 	async queryHandling(prompt: string): Promise<string> {
@@ -149,7 +165,7 @@ export class LlamaCppProvider extends Provider {
 				headers,
 				body: JSON.stringify({
 					messages: [{ role: "user", content: prompt }],
-					temperature: 0.7,
+					temperature: llamaCppSettings.temperature,
 				}),
 				signal: controller.signal,
 			});
@@ -219,7 +235,7 @@ export class LlamaCppProvider extends Provider {
 							],
 						},
 					],
-					temperature: 0.7,
+					temperature: llamaCppSettings.temperature,
 				}),
 				signal: controller.signal,
 			});

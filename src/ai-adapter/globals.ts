@@ -104,6 +104,19 @@ export const possibleModels: Models[] = [
 		imageReady: true,
 		provider: "ollama",
 	},
+	// [NEW PROVIDER] LM Studio default models
+	{
+		name: "google/gemma-4-e2b (LM Studio) [default]",
+		model: "google/gemma-4-e2b",
+		imageReady: true,
+		provider: "lmstudio",
+	},
+	{
+		name: "google/gemma-4-e2b (LM Studio)",
+		model: "google/gemma-4-e2b",
+		imageReady: false,
+		provider: "lmstudio",
+	},
 	// { [NEW PROVIDER]
 	// 	name: "EXAMPLE IMAGE",
 	// 	model: "exampleimage",

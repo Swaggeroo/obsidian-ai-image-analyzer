@@ -2,6 +2,7 @@ import { settings } from "../settings";
 import { Provider } from "./provider";
 import { OllamaProvider } from "./providers/ollamaProvider";
 import { GeminiProvider } from "./providers/geminiProvider";
+import { LlamaCppProvider } from "./providers/llamaCppProvider";
 import { provider } from "./globals";
 import { Notice } from "obsidian";
 import { debugLog } from "../util";
@@ -20,6 +21,9 @@ export function initProvider(): Provider {
 		}
 		case "gemini": {
 			return new GeminiProvider();
+		}
+		case "llama-cpp": {
+			return new LlamaCppProvider();
 		}
 		// case "testing": { [NEW PROVIDER]
 		// 	return new ExampleProvider();

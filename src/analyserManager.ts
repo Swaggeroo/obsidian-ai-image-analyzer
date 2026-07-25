@@ -97,7 +97,11 @@ async function analyzeImageHandling(file: TFile): Promise<string> {
 		const response = await queryWithImage(settings.prompt, data);
 		debugLog(context, "Response: " + (response ?? "null"));
 
-		if (!response) {
+		if (!response || response.startsWith("[AI-ERROR]")) {
+			debugLog(
+				context,
+				`Provider returned an error response, not caching: ${response}`,
+			);
 			return Promise.reject("Failed to analyze image");
 		}
 

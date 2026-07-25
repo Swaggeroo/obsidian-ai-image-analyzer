@@ -6,6 +6,7 @@ import { imagesProcessQueue, runWithTimeout } from "./globals";
 import { queryWithImage, abortCurrentRequest } from "./ai-adapter/api";
 import { provider } from "./ai-adapter/globals";
 import { OllamaProvider } from "./ai-adapter/providers/ollamaProvider";
+import { extractErrorMessage } from "./errorUtil";
 
 const context = "analyserManager";
 
@@ -18,12 +19,7 @@ export async function analyzeImage(file: TFile): Promise<string> {
 			(await imagesProcessQueue.add(() => analyzeImageTask(file))) ?? ""
 		);
 	} catch (e) {
-		const errMsg =
-			e instanceof Error
-				? e.message
-				: typeof e === "string"
-					? e
-					: JSON.stringify(e);
+		const errMsg = extractErrorMessage(e);
 		debugLog(context, errMsg);
 		return "";
 	}
@@ -37,12 +33,7 @@ async function analyzeImageTask(file: TFile): Promise<string> {
 			ANALYZE_TIMEOUT_MS,
 		);
 	} catch (e) {
-		const errMsg =
-			e instanceof Error
-				? e.message
-				: typeof e === "string"
-					? e
-					: JSON.stringify(e);
+		const errMsg = extractErrorMessage(e);
 		debugLog(context, `analyzeImageHandling failed for ${key}:`);
 		debugLog(context, errMsg);
 		if (!retriedImages.has(key)) {
@@ -58,12 +49,7 @@ async function analyzeImageTask(file: TFile): Promise<string> {
 					ANALYZE_TIMEOUT_MS,
 				);
 			} catch (e2) {
-				const errMsg2 =
-					e2 instanceof Error
-						? e2.message
-						: typeof e2 === "string"
-							? e2
-							: JSON.stringify(e2);
+				const errMsg2 = extractErrorMessage(e2);
 				debugLog(context, `Retry also failed for ${key}:`);
 				debugLog(context, errMsg2);
 				throw e2;
@@ -103,12 +89,7 @@ async function analyzeImageHandling(file: TFile): Promise<string> {
 
 		return Promise.resolve(response);
 	} catch (e) {
-		const errMsg =
-			e instanceof Error
-				? e.message
-				: typeof e === "string"
-					? e
-					: JSON.stringify(e);
+		const errMsg = extractErrorMessage(e);
 		debugLog(context, errMsg);
 		return Promise.reject(e);
 	}
@@ -126,12 +107,7 @@ export async function analyzeImageWithNotice(file: TFile): Promise<string> {
 		new Notice("Image analyzed");
 		return text;
 	} catch (e) {
-		const errMsg =
-			e instanceof Error
-				? e.message
-				: typeof e === "string"
-					? e
-					: JSON.stringify(e);
+		const errMsg = extractErrorMessage(e);
 		debugLog(context, errMsg);
 		new Notice("Failed to analyze image");
 		new Notice(errMsg);
@@ -148,12 +124,7 @@ export async function analyzeToClipboard(file: TFile) {
 		await activeWindow.navigator.clipboard.writeText(text);
 		new Notice("Text copied to clipboard");
 	} catch (e) {
-		const errMsg =
-			e instanceof Error
-				? e.message
-				: typeof e === "string"
-					? e
-					: JSON.stringify(e);
+		const errMsg = extractErrorMessage(e);
 		debugLog(context, errMsg);
 	}
 }

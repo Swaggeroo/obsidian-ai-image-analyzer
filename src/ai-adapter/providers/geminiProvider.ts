@@ -29,10 +29,13 @@ export class GeminiProvider extends Provider {
 		this.lastModel = settings.aiAdapterSettings.geminiSettings.lastModel;
 		this.lastImageModel =
 			settings.aiAdapterSettings.geminiSettings.lastImageModel;
+	}
+
+	async initialize(): Promise<boolean> {
 		GeminiProvider.restartSession();
-		this.checkGemini().then((success) => {
-			debugLog(context, "Gemini check success: " + success);
-		});
+		const success = await this.checkGemini();
+		debugLog(context, "Gemini check success: " + success);
+		return success;
 	}
 
 	generateSettings(containerEl: HTMLElement, plugin: AIImageAnalyzerPlugin) {
@@ -49,7 +52,7 @@ export class GeminiProvider extends Provider {
 							: "",
 					)
 					.onChange(async (value) => {
-						if (value.contains("•")) {
+						if (value.includes("•")) {
 							return;
 						}
 						settings.aiAdapterSettings.geminiSettings.apiKey =
@@ -78,7 +81,7 @@ export class GeminiProvider extends Provider {
 		});
 
 		if (response.text === undefined) {
-			return "[AI-ERROR] No response from Gemini API";
+			throw new Error("No response from Gemini API");
 		}
 
 		return response.text;
@@ -102,7 +105,7 @@ export class GeminiProvider extends Provider {
 		});
 
 		if (response.text === undefined) {
-			return "[AI-ERROR] No response from Gemini API";
+			throw new Error("No response from Gemini API");
 		}
 
 		return response.text;

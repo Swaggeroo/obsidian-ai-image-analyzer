@@ -4,6 +4,7 @@ import { debugLog } from "../util";
 import { Notice } from "obsidian";
 import { OllamaProvider } from "./providers/ollamaProvider";
 import { LlamaCppProvider } from "./providers/llamaCppProvider";
+import { classifyError } from "../errorUtil";
 
 const context = "ai-adapter/api";
 
@@ -16,24 +17,20 @@ export async function query(prompt: string): Promise<string> {
 			debugLog(context, "Empty response from provider");
 			return Promise.reject("Empty response from provider");
 		}
-
-		if (response.startsWith("[AI-ERROR]")) {
-			new Notice(response.replace("[AI-ERROR]", ""));
-			debugLog(context, "AI Error: " + response);
-			return Promise.reject(response);
-		}
 		return response;
 	} catch (e) {
 		if (provider instanceof OllamaProvider) {
 			OllamaProvider.refreshInstance();
 		}
-		const errMsg =
-			e instanceof Error
-				? e.message
-				: typeof e === "string"
-					? e
-					: JSON.stringify(e);
-		debugLog(context, errMsg);
+
+		const classified = classifyError(e);
+		debugLog(context, `${classified.type} error: ${classified.message}`);
+
+		// Only show Notice if not an abort (user-initiated cancellation)
+		if (classified.type !== "abort") {
+			new Notice(classified.userMessage);
+		}
+
 		return Promise.reject(e);
 	}
 }
@@ -56,13 +53,15 @@ export async function queryWithImage(
 		if (provider instanceof OllamaProvider) {
 			OllamaProvider.refreshInstance();
 		}
-		const errMsg =
-			e instanceof Error
-				? e.message
-				: typeof e === "string"
-					? e
-					: JSON.stringify(e);
-		debugLog(context, errMsg);
+
+		const classified = classifyError(e);
+		debugLog(context, `${classified.type} error: ${classified.message}`);
+
+		// Only show Notice if not an abort (user-initiated cancellation)
+		if (classified.type !== "abort") {
+			new Notice(classified.userMessage);
+		}
+
 		return Promise.reject(e);
 	}
 }

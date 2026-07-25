@@ -26,6 +26,18 @@ export function debugLog(context: string, message: object | string) {
 	}
 }
 
+function svgToBase64(svgData: string): string {
+	const bytes = new TextEncoder().encode(svgData);
+	let binary = "";
+	const chunkSize = 0x8000;
+
+	for (let i = 0; i < bytes.length; i += chunkSize) {
+		binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+	}
+
+	return btoa(binary);
+}
+
 export function getTempBasePath(): string {
 	// @ts-ignore
 	return `${app.vault.configDir}/plugins/ai-image-analyzer/tmp`; //must be global app ref to be used externally
@@ -60,34 +72,88 @@ export async function readFile(file: TFile): Promise<string> {
 			);
 
 			return await new Promise<string>((resolve, reject) => {
-				const canvas = document.createElement("canvas");
-				canvas.width = 1000;
-				canvas.height = 1000;
-				const context = canvas.getContext("2d");
+				const timeoutId = setTimeout(() => {
+					reject(
+						new Error(
+							"SVG loading timeout - SVG may be malformed or too complex",
+						),
+					);
+				}, 5000); // 5 second timeout
 
-				if (!context) {
+				const canvas = document.createElement("canvas");
+				let width = 1000;
+				let height = 1000;
+
+				// Try to extract viewBox to preserve aspect ratio
+				try {
+					const viewBoxMatch = svgData.match(
+						/viewBox\s*=\s*["']([^"']+)["']/,
+					);
+					if (viewBoxMatch) {
+						const [, , , vWidth, vHeight] =
+							viewBoxMatch[1].split(/[\s,]+/);
+						if (vWidth && vHeight) {
+							const ratio =
+								parseFloat(vWidth) / parseFloat(vHeight);
+							if (!isNaN(ratio) && isFinite(ratio)) {
+								// Adjust canvas to maintain aspect ratio
+								if (ratio > 1) {
+									height = Math.round(1000 / ratio);
+								} else {
+									width = Math.round(1000 * ratio);
+								}
+								debugLog(
+									context,
+									`SVG viewBox detected, adjusted canvas to ${width}x${height}`,
+								);
+							}
+						}
+					}
+				} catch {
+					debugLog(
+						context,
+						"Could not parse viewBox, using default size",
+					);
+				}
+
+				canvas.width = width;
+				canvas.height = height;
+				const ctx = canvas.getContext("2d");
+
+				if (!ctx) {
+					clearTimeout(timeoutId);
 					reject(new Error("Could not get canvas context"));
 					return;
 				}
 
 				const image = new Image();
+
 				image.onload = () => {
 					try {
-						context.drawImage(image, 0, 0, 1000, 1000);
+						clearTimeout(timeoutId);
+						ctx.drawImage(image, 0, 0, width, height);
 						const dataUrl = canvas.toDataURL("image/png");
 						resolve(dataUrl.split(",")[1]);
 					} catch (err) {
+						clearTimeout(timeoutId);
 						reject(err);
 					}
 				};
+
 				image.onerror = (error) => {
+					clearTimeout(timeoutId);
 					console.error("Error loading SVG image:", error);
-					reject(error);
+					reject(new Error("Failed to load SVG: " + String(error)));
 				};
 
-				// Use a data URL; btoa is fine for typical SVG content — if you expect
-				// Unicode in SVG, consider using a proper base64 encoder.
-				image.src = `data:image/svg+xml;base64,${btoa(svgData)}`;
+				try {
+					const encoded = svgToBase64(svgData);
+					image.src = `data:image/svg+xml;base64,${encoded}`;
+				} catch (e) {
+					clearTimeout(timeoutId);
+					console.error("Error encoding SVG:", e);
+					reject(new Error("Failed to encode SVG: " + String(e)));
+				}
 			});
 		} catch (error) {
 			console.error("Error converting SVG to PNG:", error);

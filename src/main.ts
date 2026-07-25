@@ -34,7 +34,9 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 		debugLog(context, "loading ai image analyzer plugin");
 		await loadSettings(this);
 
-		setProvider(initProvider());
+		const activeProvider = initProvider();
+		setProvider(activeProvider);
+		await activeProvider.initialize();
 
 		this.addCommand({
 			id: "analyze-image-to-clipboard",

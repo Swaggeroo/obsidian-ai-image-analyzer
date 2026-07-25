@@ -12,6 +12,7 @@ export abstract class Provider {
 		prompt: string,
 		image: string,
 	): Promise<string>;
+	abstract initialize(): Promise<boolean>;
 	abstract generateSettings(
 		containerEl: HTMLElement,
 		plugin: AIImageAnalyzerPlugin,

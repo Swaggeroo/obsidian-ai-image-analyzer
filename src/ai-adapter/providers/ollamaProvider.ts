@@ -118,7 +118,7 @@ export class OllamaProvider extends Provider {
 							: "",
 					)
 					.onChange(async (value) => {
-						if (value.contains("•")) {
+						if (value.includes("•")) {
 							return;
 						}
 						settings.aiAdapterSettings.ollamaSettings.token = value;

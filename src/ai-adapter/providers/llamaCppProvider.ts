@@ -95,13 +95,9 @@ export class LlamaCppProvider extends Provider {
 			)
 			.addText((text) =>
 				text
-					.setValue(
-						llamaCppSettings.token !== ""
-							? "••••••••••"
-							: "",
-					)
+					.setValue(llamaCppSettings.token !== "" ? "••••••••••" : "")
 					.onChange(async (value) => {
-						if (value.contains("•")) {
+						if (value.includes("•")) {
 							return;
 						}
 						llamaCppSettings.token = value;
@@ -126,7 +122,9 @@ export class LlamaCppProvider extends Provider {
 		let tempSpan: HTMLSpanElement;
 		new Setting(containerEl)
 			.setName("Temperature")
-			.setDesc("Controls randomness in model output (0–2). Lower values produce more deterministic responses.")
+			.setDesc(
+				"Controls randomness in model output (0–2). Lower values produce more deterministic responses.",
+			)
 			.addSlider((slider) => {
 				slider
 					.setLimits(0, 2, 0.1)
@@ -138,7 +136,9 @@ export class LlamaCppProvider extends Provider {
 				tempSpan = slider.sliderEl.parentElement!.createEl("span");
 				tempSpan.textContent = llamaCppSettings.temperature.toFixed(1);
 				slider.sliderEl.addEventListener("input", () => {
-					tempSpan.textContent = parseFloat(slider.sliderEl.value).toFixed(1);
+					tempSpan.textContent = parseFloat(
+						slider.sliderEl.value,
+					).toFixed(1);
 				});
 			});
 	}
@@ -188,9 +188,14 @@ export class LlamaCppProvider extends Provider {
 						: (JSON.stringify(e) ?? String(e));
 			debugLog(context, errMsg);
 			if (e instanceof Error && e.name === "AbortError") {
-				return "[AI-ERROR] Request was aborted";
+				const abortErr = new Error("Request was aborted");
+				abortErr.name = "AbortError";
+				(abortErr as unknown as { cause?: unknown }).cause = e;
+				throw abortErr;
 			}
-			return `[AI-ERROR] ${errMsg}`;
+			const reErr = new Error(errMsg);
+			(reErr as unknown as { cause?: unknown }).cause = e;
+			throw reErr;
 		} finally {
 			LlamaCppProvider.currentController = undefined;
 		}
@@ -258,9 +263,14 @@ export class LlamaCppProvider extends Provider {
 						: (JSON.stringify(e) ?? String(e));
 			debugLog(context, errMsg);
 			if (e instanceof Error && e.name === "AbortError") {
-				return "[AI-ERROR] Request was aborted";
+				const abortErr = new Error("Request was aborted");
+				abortErr.name = "AbortError";
+				(abortErr as unknown as { cause?: unknown }).cause = e;
+				throw abortErr;
 			}
-			return `[AI-ERROR] ${errMsg}`;
+			const reErr = new Error(errMsg);
+			(reErr as unknown as { cause?: unknown }).cause = e;
+			throw reErr;
 		} finally {
 			LlamaCppProvider.currentController = undefined;
 		}

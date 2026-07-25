@@ -16,12 +16,6 @@ export async function query(prompt: string): Promise<string> {
 			debugLog(context, "Empty response from provider");
 			return Promise.reject("Empty response from provider");
 		}
-
-		if (response.startsWith("[AI-ERROR]")) {
-			new Notice(response.replace("[AI-ERROR]", ""));
-			debugLog(context, "AI Error: " + response);
-			return Promise.reject(response);
-		}
 		return response;
 	} catch (e) {
 		if (provider instanceof OllamaProvider) {
@@ -34,6 +28,11 @@ export async function query(prompt: string): Promise<string> {
 					? e
 					: JSON.stringify(e);
 		debugLog(context, errMsg);
+
+		if (!(e instanceof Error && e.name === "AbortError")) {
+			new Notice(errMsg);
+		}
+
 		return Promise.reject(e);
 	}
 }
@@ -51,12 +50,6 @@ export async function queryWithImage(
 			return Promise.reject("Empty response from provider");
 		}
 
-		if (response.startsWith("[AI-ERROR]")) {
-			new Notice(response.replace("[AI-ERROR]", ""));
-			debugLog(context, "AI Error: " + response);
-			return Promise.reject(response);
-		}
-
 		return response;
 	} catch (e) {
 		if (provider instanceof OllamaProvider) {
@@ -69,6 +62,11 @@ export async function queryWithImage(
 					? e
 					: JSON.stringify(e);
 		debugLog(context, errMsg);
+
+		if (!(e instanceof Error && e.name === "AbortError")) {
+			new Notice(errMsg);
+		}
+
 		return Promise.reject(e);
 	}
 }

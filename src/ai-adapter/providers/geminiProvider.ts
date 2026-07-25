@@ -49,7 +49,7 @@ export class GeminiProvider extends Provider {
 							: "",
 					)
 					.onChange(async (value) => {
-						if (value.contains("•")) {
+						if (value.includes("•")) {
 							return;
 						}
 						settings.aiAdapterSettings.geminiSettings.apiKey =
@@ -78,7 +78,7 @@ export class GeminiProvider extends Provider {
 		});
 
 		if (response.text === undefined) {
-			return "[AI-ERROR] No response from Gemini API";
+			throw new Error("No response from Gemini API");
 		}
 
 		return response.text;
@@ -102,7 +102,7 @@ export class GeminiProvider extends Provider {
 		});
 
 		if (response.text === undefined) {
-			return "[AI-ERROR] No response from Gemini API";
+			throw new Error("No response from Gemini API");
 		}
 
 		return response.text;

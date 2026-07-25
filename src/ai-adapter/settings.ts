@@ -65,6 +65,11 @@ export function generateSettings(
 				)
 				.setValue(settings.aiAdapterSettings.provider)
 				.onChange(async (value: string) => {
+					const oldProvider = provider;
+					if (oldProvider) {
+						oldProvider.shutdown();
+					}
+
 					settings.aiAdapterSettings.provider = value as Providers;
 					setProvider(initProvider());
 

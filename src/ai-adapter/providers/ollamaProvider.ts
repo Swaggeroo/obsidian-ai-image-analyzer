@@ -36,10 +36,13 @@ export class OllamaProvider extends Provider {
 		this.lastModel = settings.aiAdapterSettings.ollamaSettings.lastModel;
 		this.lastImageModel =
 			settings.aiAdapterSettings.ollamaSettings.lastImageModel;
+	}
+
+	async initialize(): Promise<boolean> {
 		OllamaProvider.refreshInstance();
-		this.checkOllama().then((success) => {
-			debugLog(context, "Ollama check success: " + success);
-		});
+		const success = await this.checkOllama();
+		debugLog(context, "Ollama check success: " + success);
+		return success;
 	}
 
 	generateSettings(containerEl: HTMLElement, plugin: AIImageAnalyzerPlugin) {

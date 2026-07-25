@@ -43,4 +43,8 @@ export class ExampleProvider extends Provider {
 		super.setLastImageModel(model);
 		// settings.exampleSettings.lastImageModel = model;
 	}
+
+	initialize(): Promise<boolean> {
+		return Promise.resolve(false);
+	}
 }

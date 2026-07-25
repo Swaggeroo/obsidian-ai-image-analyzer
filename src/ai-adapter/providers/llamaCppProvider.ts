@@ -50,10 +50,12 @@ export class LlamaCppProvider extends Provider {
 		const llamaCppSettings = getLlamaCppSettings();
 		this.lastModel = llamaCppSettings.lastModel;
 		this.lastImageModel = llamaCppSettings.lastImageModel;
+	}
 
-		this.checkConnection().then((success) => {
-			debugLog(context, "llama.cpp check success: " + success);
-		});
+	async initialize(): Promise<boolean> {
+		const success = await this.checkConnection();
+		debugLog(context, "llama.cpp check success: " + success);
+		return success;
 	}
 
 	generateSettings(containerEl: HTMLElement, plugin: AIImageAnalyzerPlugin) {

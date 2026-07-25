@@ -71,13 +71,15 @@ export function generateSettings(
 					}
 
 					settings.aiAdapterSettings.provider = value as Providers;
-					setProvider(initProvider());
+					const nextProvider = initProvider();
+					setProvider(nextProvider);
+					await nextProvider.initialize();
 
 					settings.aiAdapterSettings.selectedModel =
-						provider.lastModel ?? possibleModels[0];
+						nextProvider.lastModel ?? possibleModels[0];
 
 					settings.aiAdapterSettings.selectedImageModel =
-						provider.lastImageModel ?? possibleModels[0];
+						nextProvider.lastImageModel ?? possibleModels[0];
 
 					await saveSettings(plugin);
 					notifyModelsChange();

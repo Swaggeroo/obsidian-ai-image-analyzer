@@ -29,10 +29,13 @@ export class GeminiProvider extends Provider {
 		this.lastModel = settings.aiAdapterSettings.geminiSettings.lastModel;
 		this.lastImageModel =
 			settings.aiAdapterSettings.geminiSettings.lastImageModel;
+	}
+
+	async initialize(): Promise<boolean> {
 		GeminiProvider.restartSession();
-		this.checkGemini().then((success) => {
-			debugLog(context, "Gemini check success: " + success);
-		});
+		const success = await this.checkGemini();
+		debugLog(context, "Gemini check success: " + success);
+		return success;
 	}
 
 	generateSettings(containerEl: HTMLElement, plugin: AIImageAnalyzerPlugin) {

@@ -33,9 +33,9 @@ export async function writeCache(file: TFile, text: string): Promise<void> {
 	const path = getCachePath(file);
 
 	//@ts-ignore
-	if (!(await this.app.vault.adapter.exists(getCacheBasePath()))) {
+	if (!(await app.vault.adapter.exists(getCacheBasePath()))) {
 		//@ts-ignore
-		await this.app.vault.adapter.mkdir(getCacheBasePath());
+		await app.vault.adapter.mkdir(getCacheBasePath());
 	}
 
 	const data: AnalyzedText = {
@@ -54,7 +54,7 @@ export async function readCache(file: TFile): Promise<AnalyzedText | null> {
 		if (await isInCache(file)) {
 			const path = getCachePath(file);
 			//@ts-ignore
-			const raw = await this.app.vault.adapter.read(path);
+			const raw = await app.vault.adapter.read(path);
 			const text = JSON.parse(raw) as AnalyzedText;
 			if (text.text.length === 0) {
 				debugLog(context, "Cache entry is empty, removing");
@@ -76,16 +76,16 @@ export async function removeFromCache(file: TFile): Promise<void> {
 	if (await isInCache(file)) {
 		debugLog(context, `Removing cache entry for ${file.path}`);
 		//@ts-ignore
-		return await this.app.vault.adapter.remove(path);
+		return await app.vault.adapter.remove(path);
 	}
 }
 
 export async function clearCache(): Promise<void> {
 	const path = getCacheBasePath();
 	//@ts-ignore
-	if (await this.app.vault.adapter.exists(path)) {
+	if (await app.vault.adapter.exists(path)) {
 		debugLog(context, `Clearing cache`);
 		//@ts-ignore
-		return await this.app.vault.adapter.rmdir(path, true);
+		return await app.vault.adapter.rmdir(path, true);
 	}
 }

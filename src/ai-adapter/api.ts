@@ -51,6 +51,12 @@ export async function queryWithImage(
 			return Promise.reject("Empty response from provider");
 		}
 
+		if (response.startsWith("[AI-ERROR]")) {
+			new Notice(response.replace("[AI-ERROR]", ""));
+			debugLog(context, "AI Error: " + response);
+			return Promise.reject(response);
+		}
+
 		return response;
 	} catch (e) {
 		if (provider instanceof OllamaProvider) {

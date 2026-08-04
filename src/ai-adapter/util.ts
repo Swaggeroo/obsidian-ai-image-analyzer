@@ -3,7 +3,7 @@ import { Provider } from "./provider";
 import { OllamaProvider } from "./providers/ollamaProvider";
 import { GeminiProvider } from "./providers/geminiProvider";
 import { LlamaCppProvider } from "./providers/llamaCppProvider";
-import { OpenAiCompatibleProvider } from "./providers/openAiCompatibleProvider";
+import { OpenAiCompatibleProvider } from "./providers/openAiCompatible/provider";
 import { provider } from "./globals";
 import { Notice } from "obsidian";
 import { debugLog } from "../util";

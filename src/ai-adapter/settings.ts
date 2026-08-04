@@ -24,7 +24,7 @@ import {
 import {
 	DEFAULT_OPEN_AI_COMPATIBLE_SETTINGS,
 	OpenAiCompatibleSettings,
-} from "./providers/openAiCompatibleProvider";
+} from "./providers/openAiCompatible/settings";
 
 import AIImageAnalyzerPlugin from "../main";
 import { saveSettings, settings } from "../settings";

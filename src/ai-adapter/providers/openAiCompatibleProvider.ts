@@ -17,6 +17,8 @@ export type OpenAiCompatibleSettings = {
 	temperature: number;
 };
 
+const CONNECTION_TIMEOUT_MS = 10_000;
+
 // shown until the gateway answers with its model list
 const PLACEHOLDER_MODEL: Models = {
 	name: "No model loaded",
@@ -119,6 +121,8 @@ export class OpenAiCompatibleProvider extends Provider {
 			.addButton((button) =>
 				button.setButtonText("Test").onClick(async () => {
 					const success = await this.checkConnection();
+					// the model list may have resolved a new selection
+					await saveSettings(plugin);
 					if (success) {
 						new Notice("Successfully connected to the server!");
 					} else {
@@ -268,7 +272,12 @@ export class OpenAiCompatibleProvider extends Provider {
 		}
 
 		try {
-			const response = await fetch(url, { headers });
+			// the plugin awaits this on load, an unresponsive server must not
+			// hold the whole startup
+			const response = await fetch(url, {
+				headers,
+				signal: AbortSignal.timeout(CONNECTION_TIMEOUT_MS),
+			});
 			if (!response.ok) {
 				debugLog(
 					context,
@@ -309,34 +318,24 @@ export class OpenAiCompatibleProvider extends Provider {
 				possibleModels.splice(i, 1);
 			}
 		}
-		possibleModels.push(
-			...(models.length > 0 ? models : [PLACEHOLDER_MODEL]),
-		);
+		const available = models.length > 0 ? models : [PLACEHOLDER_MODEL];
+		possibleModels.push(...available);
 
-		// a model saved in an earlier session may be gone from the server
-		const fallback = possibleModels.find(
-			(m) => m.provider === "openai-compatible",
-		)!;
-		if (
-			settings.aiAdapterSettings.provider === "openai-compatible" &&
-			!models.some(
-				(m) =>
-					m.model ===
-					settings.aiAdapterSettings.selectedImageModel.model,
-			)
-		) {
-			settings.aiAdapterSettings.selectedImageModel = fallback;
-			this.setLastImageModel(fallback);
-		}
-		if (
-			settings.aiAdapterSettings.provider === "openai-compatible" &&
-			!models.some(
-				(m) =>
-					m.model === settings.aiAdapterSettings.selectedModel.model,
-			)
-		) {
-			settings.aiAdapterSettings.selectedModel = fallback;
-			this.setLastModel(fallback);
+		if (settings.aiAdapterSettings.provider === "openai-compatible") {
+			// a model saved in an earlier session may be gone from the server
+			const keep = (selected: Models) =>
+				available.find((m) => m.model === selected.model) ??
+				available[0];
+
+			const imageModel = keep(
+				settings.aiAdapterSettings.selectedImageModel,
+			);
+			settings.aiAdapterSettings.selectedImageModel = imageModel;
+			this.setLastImageModel(imageModel);
+
+			const textModel = keep(settings.aiAdapterSettings.selectedModel);
+			settings.aiAdapterSettings.selectedModel = textModel;
+			this.setLastModel(textModel);
 		}
 
 		notifyModelsChange();

@@ -18,6 +18,8 @@ export type OpenAiCompatibleSettings = {
 };
 
 const CONNECTION_TIMEOUT_MS = 10_000;
+const REQUEST_TIMEOUT_MS = 300_000;
+const MAX_ERROR_BODY = 500;
 
 // shown until the gateway answers with its model list
 const PLACEHOLDER_MODEL: Models = {
@@ -194,6 +196,12 @@ export class OpenAiCompatibleProvider extends Provider {
 		const url = `${openAiCompatibleSettings.url}/v1/chat/completions`;
 		const token = openAiCompatibleSettings.token;
 
+		if (!model) {
+			throw new Error(
+				"No model selected. Open the settings, test the connection and pick a model.",
+			);
+		}
+
 		const headers: Record<string, string> = {
 			"Content-Type": "application/json",
 		};
@@ -204,6 +212,14 @@ export class OpenAiCompatibleProvider extends Provider {
 		OpenAiCompatibleProvider.abortCurrentRequest();
 		const controller = new AbortController();
 		OpenAiCompatibleProvider.currentController = controller;
+
+		// an analysis can legitimately run for minutes, this only bounds a
+		// server that never answers at all
+		let timedOut = false;
+		const timeout = setTimeout(() => {
+			timedOut = true;
+			controller.abort();
+		}, REQUEST_TIMEOUT_MS);
 
 		try {
 			const response = await fetch(url, {
@@ -221,7 +237,12 @@ export class OpenAiCompatibleProvider extends Provider {
 			});
 
 			if (!response.ok) {
-				const errorText = await response.text();
+				// an error page can be arbitrarily long, this ends up in a
+				// notice
+				const errorText = (await response.text()).slice(
+					0,
+					MAX_ERROR_BODY,
+				);
 				throw new Error(
 					`HTTP error! status: ${response.status}, ${errorText}`,
 				);
@@ -232,6 +253,13 @@ export class OpenAiCompatibleProvider extends Provider {
 		} catch (e) {
 			const errMsg = extractErrorMessage(e);
 			debugLog(context, errMsg);
+			if (timedOut) {
+				const timeoutErr = new Error(
+					`The server did not answer within ${REQUEST_TIMEOUT_MS / 1000} seconds`,
+				);
+				(timeoutErr as unknown as { cause?: unknown }).cause = e;
+				throw timeoutErr;
+			}
 			if (e instanceof Error && e.name === "AbortError") {
 				const abortErr = new Error("Request was aborted");
 				abortErr.name = "AbortError";
@@ -242,6 +270,7 @@ export class OpenAiCompatibleProvider extends Provider {
 			(reErr as unknown as { cause?: unknown }).cause = e;
 			throw reErr;
 		} finally {
+			clearTimeout(timeout);
 			OpenAiCompatibleProvider.currentController = undefined;
 		}
 	}
@@ -271,12 +300,18 @@ export class OpenAiCompatibleProvider extends Provider {
 			headers["Authorization"] = `Bearer ${token}`;
 		}
 
+		// the plugin awaits this on load, an unresponsive server must not hold
+		// the whole startup
+		const controller = new AbortController();
+		const timeout = setTimeout(
+			() => controller.abort(),
+			CONNECTION_TIMEOUT_MS,
+		);
+
 		try {
-			// the plugin awaits this on load, an unresponsive server must not
-			// hold the whole startup
 			const response = await fetch(url, {
 				headers,
-				signal: AbortSignal.timeout(CONNECTION_TIMEOUT_MS),
+				signal: controller.signal,
 			});
 			if (!response.ok) {
 				debugLog(
@@ -309,6 +344,8 @@ export class OpenAiCompatibleProvider extends Provider {
 		} catch (e) {
 			debugLog(context, "Failed to connect to the server: " + e);
 			return false;
+		} finally {
+			clearTimeout(timeout);
 		}
 	}
 

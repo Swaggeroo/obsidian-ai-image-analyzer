@@ -5,6 +5,11 @@ export type Models = {
 	provider: Providers;
 };
 
-export type Providers = "ollama" | "gemini" | "llama-cpp"; // | "example" [NEW PROVIDER]
+export type Providers = "ollama" | "gemini" | "llama-cpp" | "openai-compatible"; // | "example" [NEW PROVIDER]
 
-export const providerNames: Providers[] = ["ollama", "gemini", "llama-cpp"]; //, "example"]; [NEW PROVIDER]
+export const providerNames: Providers[] = [
+	"ollama",
+	"gemini",
+	"llama-cpp",
+	"openai-compatible",
+]; //, "example"]; [NEW PROVIDER]

@@ -21,6 +21,11 @@ import {
 	LlamaCppSettings,
 } from "./providers/llamaCppProvider";
 
+import {
+	DEFAULT_OPEN_AI_COMPATIBLE_SETTINGS,
+	OpenAiCompatibleSettings,
+} from "./providers/openAiCompatible/settings";
+
 import AIImageAnalyzerPlugin from "../main";
 import { saveSettings, settings } from "../settings";
 // import {DEFAULT_EXAMPLE_SETTINGS, ExampleSettings} from "./exampleProvider"; [NEW PROVIDER]
@@ -32,6 +37,7 @@ export type AIAdapterPluginSettings = {
 	ollamaSettings: OllamaSettings;
 	geminiSettings: GeminiSettings;
 	llamaCppSettings: LlamaCppSettings;
+	openAiCompatibleSettings: OpenAiCompatibleSettings;
 	// exampleSettings: ExampleSettings; [NEW PROVIDER]
 };
 
@@ -42,6 +48,7 @@ export const DEFAULT_SETTINGS: AIAdapterPluginSettings = {
 	ollamaSettings: DEFAULT_OLLAMA_SETTINGS,
 	geminiSettings: DEFAULT_GEMINI_SETTINGS,
 	llamaCppSettings: DEFAULT_LLAMA_CPP_SETTINGS,
+	openAiCompatibleSettings: DEFAULT_OPEN_AI_COMPATIBLE_SETTINGS,
 	// exampleSettings: DEFAULT_EXAMPLE_SETTINGS [NEW PROVIDER]
 };
 

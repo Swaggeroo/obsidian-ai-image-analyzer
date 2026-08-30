@@ -12,7 +12,7 @@ export function runWithTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
 	return Promise.race<T>([
 		p,
 		new Promise<T>((_, rej) =>
-			setTimeout(() => rej(new Error(`timeout after ${ms}ms`)), ms),
+			window.setTimeout(() => rej(new Error(`timeout after ${ms}ms`)), ms),
 		),
 	]);
 }

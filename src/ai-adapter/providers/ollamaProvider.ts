@@ -323,7 +323,7 @@ export class OllamaProvider extends Provider {
 			headers: {
 				Authorization: `Bearer ${settings.aiAdapterSettings.ollamaSettings.token}`,
 			},
-			fetch: OllamaProvider.ollamaFetch,
+			fetch: (input, init) => OllamaProvider.ollamaFetch(input, init),
 		});
 	}
 

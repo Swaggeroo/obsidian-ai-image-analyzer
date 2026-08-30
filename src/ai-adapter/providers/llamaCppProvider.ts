@@ -322,7 +322,7 @@ export class LlamaCppProvider extends Provider {
 				return true;
 			}
 		} catch (e) {
-			debugLog(context, "Failed to connect to llama-server: " + e);
+			debugLog(context, "Failed to connect to llama-server: " + String(e));
 		}
 		return false;
 	}

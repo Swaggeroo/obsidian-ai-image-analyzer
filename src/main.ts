@@ -5,7 +5,7 @@ import {
 	analyzeImageWithNotice,
 	analyzeToClipboard,
 } from "./analyserManager";
-import { debugLog, isImageFile } from "./util";
+import { debugLog, isImageFile, getApp } from "./util";
 import { AIImageAnalyzerSettingsTab, loadSettings } from "./settings";
 import { imagesProcessQueue } from "./globals";
 import {
@@ -145,9 +145,7 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 
 function getActiveFile(): TFile | null {
 	return (
-		//@ts-ignore
-		this.app.workspace.activeEditor?.file ??
-		//@ts-ignore
-		this.app.workspace.getActiveFile()
+		getApp().workspace.activeEditor?.file ??
+		getApp().workspace.getActiveFile()
 	);
 }

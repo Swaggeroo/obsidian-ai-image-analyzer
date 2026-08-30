@@ -5,7 +5,7 @@ import {
 	analyzeImageWithNotice,
 	analyzeToClipboard,
 } from "./analyserManager";
-import { debugLog, isImageFile } from "./util";
+import { debugLog, isImageFile, getApp } from "./util";
 import { AIImageAnalyzerSettingsTab, loadSettings } from "./settings";
 import { imagesProcessQueue } from "./globals";
 import {
@@ -46,7 +46,7 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 
 				if (file != null && isImageFile(file)) {
 					if (!checking) {
-						analyzeToClipboard(file);
+						void analyzeToClipboard(file);
 					}
 					return true;
 				}
@@ -62,7 +62,7 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 				const file = getActiveFile();
 				if (file != null && isImageFile(file)) {
 					if (!checking) {
-						analyzeImageWithNotice(file);
+						void analyzeImageWithNotice(file);
 					}
 					return true;
 				}
@@ -78,7 +78,7 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 				const file = getActiveFile();
 				if (file != null && isImageFile(file)) {
 					if (!checking) {
-						removeFromCache(file);
+						void removeFromCache(file);
 						new Notice("Cache cleared");
 					}
 					return true;
@@ -101,7 +101,7 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 								.setTitle("Analyze image to clipboard")
 								.setIcon("clipboard")
 								.onClick(() => {
-									analyzeToClipboard(file);
+									void analyzeToClipboard(file);
 								}),
 						);
 
@@ -145,9 +145,7 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 
 function getActiveFile(): TFile | null {
 	return (
-		//@ts-ignore
-		this.app.workspace.activeEditor?.file ??
-		//@ts-ignore
-		this.app.workspace.getActiveFile()
+		getApp().workspace.activeEditor?.file ??
+		getApp().workspace.getActiveFile()
 	);
 }

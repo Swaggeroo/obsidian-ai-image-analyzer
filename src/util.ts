@@ -1,7 +1,10 @@
-import { arrayBufferToBase64, TFile } from "obsidian";
+import { arrayBufferToBase64, TFile, App } from "obsidian";
 import { settings } from "./settings";
 
 const context = "util";
+export function getApp(): App {
+	return (window as unknown as { app: App }).app;
+}
 
 function stringToColor(str: string): string {
 	let hash = 0;
@@ -39,8 +42,7 @@ function svgToBase64(svgData: string): string {
 }
 
 export function getTempBasePath(): string {
-	// @ts-ignore
-	return `${app.vault.configDir}/plugins/ai-image-analyzer/tmp`; //must be global app ref to be used externally
+	return `${getApp().vault.configDir}/plugins/ai-image-analyzer/tmp`; //must be global app ref to be used externally
 }
 
 export function getTempPath(file: TFile): string {
@@ -66,13 +68,12 @@ export async function readFile(file: TFile): Promise<string> {
 		debugLog(context, "Converting SVG to PNG");
 
 		try {
-			//@ts-ignore
-			const svgData: string = await this.app.vault.adapter.read(
+			const svgData: string = await getApp().vault.adapter.read(
 				file.path,
 			);
 
 			return await new Promise<string>((resolve, reject) => {
-				const timeoutId = setTimeout(() => {
+				const timeoutId = window.setTimeout(() => {
 					reject(
 						new Error(
 							"SVG loading timeout - SVG may be malformed or too complex",
@@ -80,7 +81,7 @@ export async function readFile(file: TFile): Promise<string> {
 					);
 				}, 5000); // 5 second timeout
 
-				const canvas = document.createElement("canvas");
+				const canvas = createEl("canvas");
 				let width = 1000;
 				let height = 1000;
 
@@ -121,7 +122,7 @@ export async function readFile(file: TFile): Promise<string> {
 				const ctx = canvas.getContext("2d");
 
 				if (!ctx) {
-					clearTimeout(timeoutId);
+					window.clearTimeout(timeoutId);
 					reject(new Error("Could not get canvas context"));
 					return;
 				}
@@ -130,27 +131,29 @@ export async function readFile(file: TFile): Promise<string> {
 
 				image.onload = () => {
 					try {
-						clearTimeout(timeoutId);
+						window.clearTimeout(timeoutId);
 						ctx.drawImage(image, 0, 0, width, height);
 						const dataUrl = canvas.toDataURL("image/png");
 						resolve(dataUrl.split(",")[1]);
 					} catch (err) {
-						clearTimeout(timeoutId);
-						reject(err);
+						window.clearTimeout(timeoutId);
+						reject(
+							err instanceof Error ? err : new Error(String(err)),
+						);
 					}
 				};
 
 				image.onerror = (error) => {
-					clearTimeout(timeoutId);
+					window.clearTimeout(timeoutId);
 					console.error("Error loading SVG image:", error);
-					reject(new Error("Failed to load SVG: " + String(error)));
+					reject(new Error("Failed to load SVG."));
 				};
 
 				try {
 					const encoded = svgToBase64(svgData);
 					image.src = `data:image/svg+xml;base64,${encoded}`;
 				} catch (e) {
-					clearTimeout(timeoutId);
+					window.clearTimeout(timeoutId);
 					console.error("Error encoding SVG:", e);
 					reject(new Error("Failed to encode SVG: " + String(e)));
 				}
@@ -160,15 +163,6 @@ export async function readFile(file: TFile): Promise<string> {
 			throw error;
 		}
 	} else {
-		// @ts-ignore
-		return arrayBufferToBase64(await app.vault.readBinary(file)); //must be global app ref to be used externally
+		return arrayBufferToBase64(await getApp().vault.readBinary(file)); //must be global app ref to be used externally
 	}
-}
-
-export function htmlDescription(innerHTML: string): DocumentFragment {
-	const desc = new DocumentFragment();
-	desc.createSpan({}, (span) => {
-		span.innerHTML = innerHTML;
-	});
-	return desc;
 }

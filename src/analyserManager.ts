@@ -62,7 +62,7 @@ async function analyzeImageTask(file: TFile): Promise<string> {
 async function analyzeImageHandling(file: TFile): Promise<string> {
 	debugLog(context, `Analyzing image ${file.name}`);
 	if (!isImageFile(file)) {
-		return Promise.reject("File is not an image");
+		throw new Error("File is not an image");
 	}
 
 	if (await isInCache(file)) {
@@ -71,7 +71,7 @@ async function analyzeImageHandling(file: TFile): Promise<string> {
 		if (text && text.text !== "") {
 			debugLog(context, "Reading from cache");
 			debugLog(context, `Image analyzed ${file.name}`);
-			return Promise.resolve(text.text);
+			return text.text;
 		} else {
 			debugLog(context, "Failed to read cache");
 		}
@@ -87,11 +87,11 @@ async function analyzeImageHandling(file: TFile): Promise<string> {
 
 		debugLog(context, `Image analyzed ${file.name}`);
 
-		return Promise.resolve(response);
+		return response;
 	} catch (e) {
 		const errMsg = extractErrorMessage(e);
 		debugLog(context, errMsg);
-		return Promise.reject(e);
+		throw e instanceof Error ? e : new Error(String(e));
 	}
 }
 

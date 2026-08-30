@@ -1,4 +1,4 @@
-# Obsidian AI Image Analyser Plugin
+# AI image analyzer
 
 This plugin allows you to analyze images in Obsidian using the Ollama API.
 Because of this it requires Ollama to be installed and running on some machine.

@@ -2,13 +2,12 @@ import { createHash } from "crypto";
 import { TFile } from "obsidian";
 import { libVersion } from "./globals";
 import { AnalyzedText } from "./types";
-import { debugLog } from "./util";
+import { debugLog, getApp } from "./util";
 
 const context = "cache";
 
 export function getCacheBasePath(): string {
-	// @ts-ignore
-	return `${app.vault.configDir}/plugins/ai-image-analyzer/cache`; //must be global app ref to be used externally
+	return `${getApp().vault.configDir}/plugins/ai-image-analyzer/cache`; //must be global app ref to be used externally
 }
 
 function getCachePath(file: TFile): string {
@@ -21,8 +20,8 @@ function getCachePath(file: TFile): string {
 
 export async function isInCache(file: TFile): Promise<boolean> {
 	const path = getCachePath(file);
-	// @ts-ignore
-	return await app.vault.adapter.exists(path); //must be global app ref to be used externally
+
+	return await getApp().vault.adapter.exists(path); //must be global app ref to be used externally
 }
 
 export async function writeCache(file: TFile, text: string): Promise<void> {
@@ -32,10 +31,8 @@ export async function writeCache(file: TFile, text: string): Promise<void> {
 
 	const path = getCachePath(file);
 
-	//@ts-ignore
-	if (!(await app.vault.adapter.exists(getCacheBasePath()))) {
-		//@ts-ignore
-		await app.vault.adapter.mkdir(getCacheBasePath());
+	if (!(await getApp().vault.adapter.exists(getCacheBasePath()))) {
+		await getApp().vault.adapter.mkdir(getCacheBasePath());
 	}
 
 	const data: AnalyzedText = {
@@ -45,16 +42,16 @@ export async function writeCache(file: TFile, text: string): Promise<void> {
 	};
 
 	debugLog(context, `Writing cache entry for ${file.path}`);
-	//@ts-ignore
-	await this.app.vault.adapter.write(path, JSON.stringify(data));
+
+	await getApp().vault.adapter.write(path, JSON.stringify(data));
 }
 
 export async function readCache(file: TFile): Promise<AnalyzedText | null> {
 	try {
 		if (await isInCache(file)) {
 			const path = getCachePath(file);
-			//@ts-ignore
-			const raw = await app.vault.adapter.read(path);
+
+			const raw = await getApp().vault.adapter.read(path);
 			const text = JSON.parse(raw) as AnalyzedText;
 			if (text.text.length === 0) {
 				debugLog(context, "Cache entry is empty, removing");
@@ -75,17 +72,17 @@ export async function removeFromCache(file: TFile): Promise<void> {
 	const path = getCachePath(file);
 	if (await isInCache(file)) {
 		debugLog(context, `Removing cache entry for ${file.path}`);
-		//@ts-ignore
-		return await app.vault.adapter.remove(path);
+
+		return await getApp().vault.adapter.remove(path);
 	}
 }
 
 export async function clearCache(): Promise<void> {
 	const path = getCacheBasePath();
-	//@ts-ignore
-	if (await app.vault.adapter.exists(path)) {
+
+	if (await getApp().vault.adapter.exists(path)) {
 		debugLog(context, `Clearing cache`);
-		//@ts-ignore
-		return await app.vault.adapter.rmdir(path, true);
+
+		return await getApp().vault.adapter.rmdir(path, true);
 	}
 }

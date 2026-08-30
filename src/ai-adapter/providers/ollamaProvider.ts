@@ -65,8 +65,7 @@ export class OllamaProvider extends Provider {
 			.setDesc("Set the URL for the ollama server")
 			.addText((text) =>
 				text
-					// eslint-disable-next-line obsidianmd/ui/sentence-case
-					.setPlaceholder("Enter the host (http://127.0.0.1:11434)")
+					.setPlaceholder("Example: http://127.0.0.1:11434")
 					.setValue(settings.aiAdapterSettings.ollamaSettings.url)
 					.onChange(async (value) => {
 						if (value.length === 0) {
@@ -74,12 +73,19 @@ export class OllamaProvider extends Provider {
 						}
 						settings.aiAdapterSettings.ollamaSettings.url = value;
 						OllamaProvider.refreshInstance();
-						this.checkOllama().then((success) => {
-							debugLog(
-								context,
-								"Ollama check success: " + success,
-							);
-						});
+						this.checkOllama()
+							.then((success) => {
+								debugLog(
+									context,
+									"Ollama check success: " + success,
+								);
+							})
+							.catch((e) => {
+								debugLog(
+									context,
+									"Ollama check error: " + String(e),
+								);
+							});
 						await saveSettings(plugin);
 					}),
 			);
@@ -89,8 +95,7 @@ export class OllamaProvider extends Provider {
 			.setDesc("Set a fallback URL for the ollama server")
 			.addText((text) =>
 				text
-					// eslint-disable-next-line obsidianmd/ui/sentence-case
-					.setPlaceholder("Enter the host (http://127.0.0.1:11434)")
+					.setPlaceholder("Example: http://127.0.0.1:11434")
 					.setValue(
 						settings.aiAdapterSettings.ollamaSettings.fallbackUrl,
 					)
@@ -98,12 +103,19 @@ export class OllamaProvider extends Provider {
 						settings.aiAdapterSettings.ollamaSettings.fallbackUrl =
 							value;
 						OllamaProvider.refreshInstance();
-						this.checkOllama().then((success) => {
-							debugLog(
-								context,
-								"Ollama check success: " + success,
-							);
-						});
+						this.checkOllama()
+							.then((success) => {
+								debugLog(
+									context,
+									"Ollama check success: " + success,
+								);
+							})
+							.catch((e) => {
+								debugLog(
+									context,
+									"Ollama check error: " + String(e),
+								);
+							});
 						await saveSettings(plugin);
 					}),
 			);
@@ -317,7 +329,7 @@ export class OllamaProvider extends Provider {
 			headers: {
 				Authorization: `Bearer ${settings.aiAdapterSettings.ollamaSettings.token}`,
 			},
-			fetch: OllamaProvider.ollamaFetch,
+			fetch: (input, init) => OllamaProvider.ollamaFetch(input, init),
 		});
 	}
 
@@ -362,7 +374,7 @@ export class OllamaProvider extends Provider {
 			signal: controller.signal,
 		};
 
-		const promise = fetch(input, newInit);
+		const promise = window.fetch(input, newInit);
 
 		// Clear stored controller when this request settles (if it's still the same)
 		promise

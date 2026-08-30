@@ -1,5 +1,5 @@
 import { Provider } from "../provider";
-import { Notice, Setting } from "obsidian";
+import { Notice, Setting, requestUrl } from "obsidian";
 import { debugLog } from "../../util";
 import { Models } from "../types";
 import { notifyModelsChange, possibleModels } from "../globals";
@@ -72,20 +72,26 @@ export class LlamaCppProvider extends Provider {
 			)
 			.addText((text) =>
 				text
-					// eslint-disable-next-line obsidianmd/ui/sentence-case
-					.setPlaceholder("http://127.0.0.1:8080")
+					.setPlaceholder("Example: http://127.0.0.1:8080")
 					.setValue(llamaCppSettings.url)
 					.onChange(async (value) => {
 						if (value.length === 0) {
 							value = DEFAULT_LLAMA_CPP_SETTINGS.url;
 						}
 						llamaCppSettings.url = value;
-						this.checkConnection().then((success) => {
-							debugLog(
-								context,
-								"llama.cpp check success: " + success,
-							);
-						});
+						this.checkConnection()
+							.then((success) => {
+								debugLog(
+									context,
+									"llama.cpp check success: " + success,
+								);
+							})
+							.catch((e) => {
+								debugLog(
+									context,
+									"llama.cpp check error: " + String(e),
+								);
+							});
 						await saveSettings(plugin);
 					}),
 			);
@@ -135,7 +141,7 @@ export class LlamaCppProvider extends Provider {
 						llamaCppSettings.temperature = value;
 						await saveSettings(plugin);
 					});
-				tempSpan = slider.sliderEl.parentElement!.createEl("span");
+				tempSpan = slider.sliderEl.parentElement!.createSpan();
 				tempSpan.textContent = llamaCppSettings.temperature.toFixed(1);
 				slider.sliderEl.addEventListener("input", () => {
 					tempSpan.textContent = parseFloat(
@@ -162,24 +168,27 @@ export class LlamaCppProvider extends Provider {
 		LlamaCppProvider.currentController = controller;
 
 		try {
-			const response = await fetch(url, {
+			const response = await requestUrl({
+				url: url,
 				method: "POST",
 				headers,
 				body: JSON.stringify({
 					messages: [{ role: "user", content: prompt }],
 					temperature: llamaCppSettings.temperature,
 				}),
-				signal: controller.signal,
+				throw: false,
 			});
 
-			if (!response.ok) {
-				const errorText = await response.text();
+			if (response.status >= 400) {
+				const errorText = response.text;
 				throw new Error(
 					`HTTP error! status: ${response.status}, ${errorText}`,
 				);
 			}
 
-			const data = await response.json();
+			const data = response.json as {
+				choices?: { message?: { content?: string } }[];
+			};
 			return data.choices?.[0]?.message?.content || "";
 		} catch (e) {
 			const errMsg =
@@ -224,7 +233,8 @@ export class LlamaCppProvider extends Provider {
 
 		try {
 			// base64 picture
-			const response = await fetch(url, {
+			const response = await requestUrl({
+				url: url,
 				method: "POST",
 				headers,
 				body: JSON.stringify({
@@ -244,17 +254,19 @@ export class LlamaCppProvider extends Provider {
 					],
 					temperature: llamaCppSettings.temperature,
 				}),
-				signal: controller.signal,
+				throw: false,
 			});
 
-			if (!response.ok) {
-				const errorText = await response.text();
+			if (response.status >= 400) {
+				const errorText = response.text;
 				throw new Error(
 					`HTTP error! status: ${response.status}, ${errorText}`,
 				);
 			}
 
-			const data = await response.json();
+			const data = response.json as {
+				choices?: { message?: { content?: string } }[];
+			};
 			return data.choices?.[0]?.message?.content || "";
 		} catch (e) {
 			const errMsg =
@@ -304,8 +316,12 @@ export class LlamaCppProvider extends Provider {
 		}
 
 		try {
-			const response = await fetch(url, { headers });
-			if (response.ok) {
+			const response = await requestUrl({
+				url: url,
+				headers,
+				throw: false,
+			});
+			if (response.status < 400) {
 				debugLog(context, "Successfully connected to llama-server");
 
 				// ensure model list include llama.cpp's model
@@ -317,7 +333,10 @@ export class LlamaCppProvider extends Provider {
 				return true;
 			}
 		} catch (e) {
-			debugLog(context, "Failed to connect to llama-server: " + e);
+			debugLog(
+				context,
+				"Failed to connect to llama-server: " + String(e),
+			);
 		}
 		return false;
 	}

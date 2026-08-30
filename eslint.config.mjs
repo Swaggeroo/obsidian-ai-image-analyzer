@@ -16,8 +16,21 @@ export default defineConfig([
 			},
 		},
 		rules: {
-			// example: turn off a rule from the recommended set
-			//"obsidianmd/sample-names": "off",
+			"obsidianmd/rule-custom-message": [
+				"error",
+				{
+					"no-console": {
+						"messages": {
+							"Unexpected console statement. Only these console methods are allowed: warn, error, debug, log, info.": "Avoid unnecessary logging to console. See https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines#Avoid+unnecessary+logging+to+console"
+						},
+						"options": [
+							{
+								"allow": ["warn", "error", "debug", "log", "info"]
+							}
+						]
+					},
+				}
+			]
 		},
 	},
 ]);

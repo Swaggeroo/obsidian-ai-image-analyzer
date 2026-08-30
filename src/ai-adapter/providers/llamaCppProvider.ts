@@ -87,7 +87,10 @@ export class LlamaCppProvider extends Provider {
 								);
 							})
 							.catch((e) => {
-								debugLog(context, "llama.cpp check error: " + String(e));
+								debugLog(
+									context,
+									"llama.cpp check error: " + String(e),
+								);
 							});
 						await saveSettings(plugin);
 					}),
@@ -183,7 +186,9 @@ export class LlamaCppProvider extends Provider {
 				);
 			}
 
-			const data = response.json as { choices?: { message?: { content?: string } }[] };
+			const data = response.json as {
+				choices?: { message?: { content?: string } }[];
+			};
 			return data.choices?.[0]?.message?.content || "";
 		} catch (e) {
 			const errMsg =
@@ -259,7 +264,9 @@ export class LlamaCppProvider extends Provider {
 				);
 			}
 
-			const data = response.json as { choices?: { message?: { content?: string } }[] };
+			const data = response.json as {
+				choices?: { message?: { content?: string } }[];
+			};
 			return data.choices?.[0]?.message?.content || "";
 		} catch (e) {
 			const errMsg =
@@ -309,7 +316,11 @@ export class LlamaCppProvider extends Provider {
 		}
 
 		try {
-			const response = await requestUrl({ url: url, headers, throw: false });
+			const response = await requestUrl({
+				url: url,
+				headers,
+				throw: false,
+			});
 			if (response.status < 400) {
 				debugLog(context, "Successfully connected to llama-server");
 
@@ -322,7 +333,10 @@ export class LlamaCppProvider extends Provider {
 				return true;
 			}
 		} catch (e) {
-			debugLog(context, "Failed to connect to llama-server: " + String(e));
+			debugLog(
+				context,
+				"Failed to connect to llama-server: " + String(e),
+			);
 		}
 		return false;
 	}

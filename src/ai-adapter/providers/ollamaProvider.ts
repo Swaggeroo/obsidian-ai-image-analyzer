@@ -81,7 +81,10 @@ export class OllamaProvider extends Provider {
 								);
 							})
 							.catch((e) => {
-								debugLog(context, "Ollama check error: " + String(e));
+								debugLog(
+									context,
+									"Ollama check error: " + String(e),
+								);
 							});
 						await saveSettings(plugin);
 					}),
@@ -108,7 +111,10 @@ export class OllamaProvider extends Provider {
 								);
 							})
 							.catch((e) => {
-								debugLog(context, "Ollama check error: " + String(e));
+								debugLog(
+									context,
+									"Ollama check error: " + String(e),
+								);
 							});
 						await saveSettings(plugin);
 					}),

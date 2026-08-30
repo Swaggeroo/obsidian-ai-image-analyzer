@@ -68,7 +68,9 @@ export async function readFile(file: TFile): Promise<string> {
 		debugLog(context, "Converting SVG to PNG");
 
 		try {
-			const svgData: string = await getApp().vault.adapter.read(file.path);
+			const svgData: string = await getApp().vault.adapter.read(
+				file.path,
+			);
 
 			return await new Promise<string>((resolve, reject) => {
 				const timeoutId = window.setTimeout(() => {

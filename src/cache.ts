@@ -7,7 +7,6 @@ import { debugLog, getApp } from "./util";
 const context = "cache";
 
 export function getCacheBasePath(): string {
-	
 	return `${getApp().vault.configDir}/plugins/ai-image-analyzer/cache`; //must be global app ref to be used externally
 }
 
@@ -21,7 +20,7 @@ function getCachePath(file: TFile): string {
 
 export async function isInCache(file: TFile): Promise<boolean> {
 	const path = getCachePath(file);
-	
+
 	return await getApp().vault.adapter.exists(path); //must be global app ref to be used externally
 }
 
@@ -32,9 +31,7 @@ export async function writeCache(file: TFile, text: string): Promise<void> {
 
 	const path = getCachePath(file);
 
-	
 	if (!(await getApp().vault.adapter.exists(getCacheBasePath()))) {
-		
 		await getApp().vault.adapter.mkdir(getCacheBasePath());
 	}
 
@@ -45,7 +42,7 @@ export async function writeCache(file: TFile, text: string): Promise<void> {
 	};
 
 	debugLog(context, `Writing cache entry for ${file.path}`);
-	
+
 	await getApp().vault.adapter.write(path, JSON.stringify(data));
 }
 
@@ -53,7 +50,7 @@ export async function readCache(file: TFile): Promise<AnalyzedText | null> {
 	try {
 		if (await isInCache(file)) {
 			const path = getCachePath(file);
-			
+
 			const raw = await getApp().vault.adapter.read(path);
 			const text = JSON.parse(raw) as AnalyzedText;
 			if (text.text.length === 0) {
@@ -75,17 +72,17 @@ export async function removeFromCache(file: TFile): Promise<void> {
 	const path = getCachePath(file);
 	if (await isInCache(file)) {
 		debugLog(context, `Removing cache entry for ${file.path}`);
-		
+
 		return await getApp().vault.adapter.remove(path);
 	}
 }
 
 export async function clearCache(): Promise<void> {
 	const path = getCacheBasePath();
-	
+
 	if (await getApp().vault.adapter.exists(path)) {
 		debugLog(context, `Clearing cache`);
-		
+
 		return await getApp().vault.adapter.rmdir(path, true);
 	}
 }

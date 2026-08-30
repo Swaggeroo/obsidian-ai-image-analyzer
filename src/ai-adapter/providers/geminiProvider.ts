@@ -58,12 +58,16 @@ export class GeminiProvider extends Provider {
 						settings.aiAdapterSettings.geminiSettings.apiKey =
 							value;
 						GeminiProvider.restartSession();
-						this.checkGemini().then((success) => {
-							debugLog(
-								context,
-								"Gemini check success: " + success,
-							);
-						});
+						this.checkGemini()
+							.then((success) => {
+								debugLog(
+									context,
+									"Gemini check success: " + success,
+								);
+							})
+							.catch((e) => {
+								debugLog(context, "Gemini check error: " + String(e));
+							});
 						await saveSettings(plugin);
 					}),
 			);

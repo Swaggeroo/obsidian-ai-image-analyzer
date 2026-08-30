@@ -73,12 +73,16 @@ export class OllamaProvider extends Provider {
 						}
 						settings.aiAdapterSettings.ollamaSettings.url = value;
 						OllamaProvider.refreshInstance();
-						this.checkOllama().then((success) => {
-							debugLog(
-								context,
-								"Ollama check success: " + success,
-							);
-						});
+						this.checkOllama()
+							.then((success) => {
+								debugLog(
+									context,
+									"Ollama check success: " + success,
+								);
+							})
+							.catch((e) => {
+								debugLog(context, "Ollama check error: " + String(e));
+							});
 						await saveSettings(plugin);
 					}),
 			);
@@ -96,12 +100,16 @@ export class OllamaProvider extends Provider {
 						settings.aiAdapterSettings.ollamaSettings.fallbackUrl =
 							value;
 						OllamaProvider.refreshInstance();
-						this.checkOllama().then((success) => {
-							debugLog(
-								context,
-								"Ollama check success: " + success,
-							);
-						});
+						this.checkOllama()
+							.then((success) => {
+								debugLog(
+									context,
+									"Ollama check success: " + success,
+								);
+							})
+							.catch((e) => {
+								debugLog(context, "Ollama check error: " + String(e));
+							});
 						await saveSettings(plugin);
 					}),
 			);

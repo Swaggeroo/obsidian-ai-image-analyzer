@@ -46,7 +46,7 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 
 				if (file != null && isImageFile(file)) {
 					if (!checking) {
-						analyzeToClipboard(file);
+						void analyzeToClipboard(file);
 					}
 					return true;
 				}
@@ -62,7 +62,7 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 				const file = getActiveFile();
 				if (file != null && isImageFile(file)) {
 					if (!checking) {
-						analyzeImageWithNotice(file);
+						void analyzeImageWithNotice(file);
 					}
 					return true;
 				}
@@ -78,7 +78,7 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 				const file = getActiveFile();
 				if (file != null && isImageFile(file)) {
 					if (!checking) {
-						removeFromCache(file);
+						void removeFromCache(file);
 						new Notice("Cache cleared");
 					}
 					return true;
@@ -101,7 +101,7 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 								.setTitle("Analyze image to clipboard")
 								.setIcon("clipboard")
 								.onClick(() => {
-									analyzeToClipboard(file);
+									void analyzeToClipboard(file);
 								}),
 						);
 

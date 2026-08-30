@@ -79,12 +79,16 @@ export class LlamaCppProvider extends Provider {
 							value = DEFAULT_LLAMA_CPP_SETTINGS.url;
 						}
 						llamaCppSettings.url = value;
-						this.checkConnection().then((success) => {
-							debugLog(
-								context,
-								"llama.cpp check success: " + success,
-							);
-						});
+						this.checkConnection()
+							.then((success) => {
+								debugLog(
+									context,
+									"llama.cpp check success: " + success,
+								);
+							})
+							.catch((e) => {
+								debugLog(context, "llama.cpp check error: " + String(e));
+							});
 						await saveSettings(plugin);
 					}),
 			);

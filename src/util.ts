@@ -136,7 +136,9 @@ export async function readFile(file: TFile): Promise<string> {
 						resolve(dataUrl.split(",")[1]);
 					} catch (err) {
 						clearTimeout(timeoutId);
-						reject(err instanceof Error ? err : new Error(String(err)));
+						reject(
+							err instanceof Error ? err : new Error(String(err)),
+						);
 					}
 				};
 
@@ -164,4 +166,3 @@ export async function readFile(file: TFile): Promise<string> {
 		return arrayBufferToBase64(await app.vault.readBinary(file)); //must be global app ref to be used externally
 	}
 }
-

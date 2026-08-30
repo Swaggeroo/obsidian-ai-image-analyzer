@@ -72,7 +72,7 @@ export class LlamaCppProvider extends Provider {
 			)
 			.addText((text) =>
 				text
-					.setPlaceholder("http://127.0.0.1:8080")
+					.setPlaceholder("Example: http://127.0.0.1:8080")
 					.setValue(llamaCppSettings.url)
 					.onChange(async (value) => {
 						if (value.length === 0) {

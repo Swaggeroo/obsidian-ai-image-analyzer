@@ -72,7 +72,6 @@ export class LlamaCppProvider extends Provider {
 			)
 			.addText((text) =>
 				text
-					// eslint-disable-next-line obsidianmd/ui/sentence-case
 					.setPlaceholder("http://127.0.0.1:8080")
 					.setValue(llamaCppSettings.url)
 					.onChange(async (value) => {

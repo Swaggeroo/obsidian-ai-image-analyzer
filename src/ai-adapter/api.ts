@@ -15,7 +15,7 @@ export async function query(prompt: string): Promise<string> {
 		const response = await provider.queryHandling(prompt);
 		if (response.length === 0) {
 			debugLog(context, "Empty response from provider");
-			return Promise.reject("Empty response from provider");
+			throw new Error("Empty response from provider");
 		}
 		return response;
 	} catch (e) {
@@ -31,7 +31,7 @@ export async function query(prompt: string): Promise<string> {
 			new Notice(classified.userMessage);
 		}
 
-		return Promise.reject(e);
+		throw e instanceof Error ? e : new Error(String(e));
 	}
 }
 
@@ -45,7 +45,7 @@ export async function queryWithImage(
 		const response = await provider.queryWithImageHandling(prompt, image);
 		if (response.length === 0) {
 			debugLog(context, "Empty response from provider");
-			return Promise.reject("Empty response from provider");
+			throw new Error("Empty response from provider");
 		}
 
 		return response;
@@ -62,7 +62,7 @@ export async function queryWithImage(
 			new Notice(classified.userMessage);
 		}
 
-		return Promise.reject(e);
+		throw e instanceof Error ? e : new Error(String(e));
 	}
 }
 

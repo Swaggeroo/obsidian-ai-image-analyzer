@@ -368,7 +368,7 @@ export class OllamaProvider extends Provider {
 			signal: controller.signal,
 		};
 
-		const promise = fetch(input, newInit);
+		const promise = window.fetch(input, newInit);
 
 		// Clear stored controller when this request settles (if it's still the same)
 		promise

@@ -39,7 +39,6 @@ function svgToBase64(svgData: string): string {
 }
 
 export function getTempBasePath(): string {
-	// @ts-ignore
 	return `${app.vault.configDir}/plugins/ai-image-analyzer/tmp`; //must be global app ref to be used externally
 }
 
@@ -66,10 +65,7 @@ export async function readFile(file: TFile): Promise<string> {
 		debugLog(context, "Converting SVG to PNG");
 
 		try {
-			//@ts-ignore
-			const svgData: string = await this.app.vault.adapter.read(
-				file.path,
-			);
+			const svgData: string = await app.vault.adapter.read(file.path);
 
 			return await new Promise<string>((resolve, reject) => {
 				const timeoutId = setTimeout(() => {
@@ -162,7 +158,6 @@ export async function readFile(file: TFile): Promise<string> {
 			throw error;
 		}
 	} else {
-		// @ts-ignore
 		return arrayBufferToBase64(await app.vault.readBinary(file)); //must be global app ref to be used externally
 	}
 }

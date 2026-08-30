@@ -34,7 +34,7 @@ export let settings: AIImageAnalyzerPluginSettings = Object.assign(
 );
 
 export async function loadSettings(plugin: AIImageAnalyzerPlugin) {
-	settings = Object.assign({}, DEFAULT_SETTINGS, await plugin.loadData());
+	settings = Object.assign({}, DEFAULT_SETTINGS, (await plugin.loadData()) as Partial<AIImageAnalyzerPluginSettings>);
 }
 
 export async function saveSettings(plugin: AIImageAnalyzerPlugin) {

@@ -30,6 +30,7 @@
 	},
 	"dependencies": {
 		"@google/genai": "^2.13.0",
+		"@obsidian-ai-providers/sdk": "^1.7.3",
 		"ollama": "^0.6.3",
 		"p-queue": "^9.3.3"
 	}

@@ -14,6 +14,7 @@ import {
 	unsubscribeFunctionSetting,
 } from "./ai-adapter/globals";
 import { initProvider } from "./ai-adapter/util";
+import { initAI } from "@obsidian-ai-providers/sdk";
 
 const context = "main";
 
@@ -32,6 +33,14 @@ export default class AIImageAnalyzerPlugin extends Plugin {
 
 	async onload() {
 		debugLog(context, "loading ai image analyzer plugin");
+
+		// Register this plugin with the AI Providers SDK so the optional
+		// "ai-providers" provider can resolve the service later. The fallback
+		// settings tab is disabled because AI Providers is not a hard dependency.
+		await initAI(this.app, this, async () => {}, {
+			disableFallback: true,
+		});
+
 		await loadSettings(this);
 
 		const activeProvider = initProvider();

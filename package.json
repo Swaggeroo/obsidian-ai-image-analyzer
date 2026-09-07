@@ -14,7 +14,7 @@
 	"author": "",
 	"license": "GPL-3.0",
 	"devDependencies": {
-		"@eslint/eslintrc": "^3.3.6",
+		"@eslint/eslintrc": "^3.3.7",
 		"@eslint/js": "^10.0.1",
 		"@types/node": "25.9.5",
 		"@typescript-eslint/eslint-plugin": "8.68.0",

@@ -4,6 +4,7 @@ import { debugLog } from "../util";
 import { Notice } from "obsidian";
 import { OllamaProvider } from "./providers/ollamaProvider";
 import { LlamaCppProvider } from "./providers/llamaCppProvider";
+import { AiProvidersProvider } from "./providers/aiProvidersProvider";
 import { classifyError } from "../errorUtil";
 
 const context = "ai-adapter/api";
@@ -71,5 +72,7 @@ export function abortCurrentRequest(): void {
 		OllamaProvider.abortCurrentOllamaRequest();
 	} else if (provider instanceof LlamaCppProvider) {
 		LlamaCppProvider.abortCurrentRequest();
+	} else if (provider instanceof AiProvidersProvider) {
+		AiProvidersProvider.abortCurrentRequest();
 	}
 }

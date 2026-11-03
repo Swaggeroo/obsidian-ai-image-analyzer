@@ -66,7 +66,10 @@ export class GeminiProvider extends Provider {
 								);
 							})
 							.catch((e) => {
-								debugLog(context, "Gemini check error: " + String(e));
+								debugLog(
+									context,
+									"Gemini check error: " + String(e),
+								);
 							});
 						await saveSettings(plugin);
 					}),

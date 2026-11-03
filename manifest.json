@@ -5,5 +5,6 @@
 	"description": "Analyze images with AI to get keywords of the image.",
 	"author": "Swaggeroo",
 	"authorUrl": "https://swaggeroo.de",
-	"isDesktopOnly": true
+	"isDesktopOnly": true,
+	"version": "1.4.0"
 }

@@ -1,6 +1,6 @@
 import { Provider } from "../provider";
 import { Notice, Setting } from "obsidian";
-import { debugLog } from "../../util";
+import { debugLog, getApp } from "../../util";
 import { Models } from "../types";
 import { notifyModelsChange, possibleModels } from "../globals";
 import AIImageAnalyzerPlugin from "../../main";
@@ -45,6 +45,13 @@ function providerDisplayName(p: IAIProvider): string {
 	return p.model ? `${p.name} (${p.model})` : p.name;
 }
 
+function isVisionProvider(
+	service: IAIProvidersService,
+	provider: IAIProvider,
+): boolean {
+	return service.getModelCapabilities({ provider })?.vision === true;
+}
+
 export class AiProvidersProvider extends Provider {
 	private static currentController: AbortController | undefined;
 
@@ -58,44 +65,63 @@ export class AiProvidersProvider extends Provider {
 	async initialize(): Promise<boolean> {
 		try {
 			const service = await AiProvidersProvider.getService();
-			this.refreshModels(service);
+			const visionCount = this.refreshModels(service);
 			debugLog(
 				context,
-				`AI Providers loaded with ${service.providers.length} provider(s)`,
+				`AI Providers loaded with ${visionCount} vision provider(s)`,
 			);
-			return service.providers.length > 0;
+			return visionCount > 0;
 		} catch (e) {
-			debugLog(context, "Failed to load AI Providers plugin: " + e);
+			debugLog(
+				context,
+				"Failed to load AI Providers plugin: " + String(e),
+			);
+			this.setFallbackModel();
 			return false;
 		}
 	}
 
 	generateSettings(containerEl: HTMLElement, plugin: AIImageAnalyzerPlugin) {
-		// eslint-disable-next-line obsidianmd/ui/sentence-case -- "AI Providers" is a plugin name
-		new Setting(containerEl).setName("AI Providers").setHeading();
+		new Setting(containerEl).setName("AI providers").setHeading();
+
+		const isInstalled = Boolean(
+			getApp().plugins?.enabledPlugins.has("ai-providers"),
+		);
+
+		if (!isInstalled) {
+			const desc = createFragment();
+			desc.append(
+				"⚠️ AI providers plugin is not installed or enabled. ",
+				desc.createEl("a", {
+					href: "obsidian://show-plugin?id=ai-providers",
+					text: "Click here to install it",
+				}),
+				".",
+			);
+			new Setting(containerEl).setName("Plugin missing").setDesc(desc);
+		}
 
 		new Setting(containerEl)
 			.setName("Providers")
 			.setDesc(
-				// eslint-disable-next-line obsidianmd/ui/sentence-case -- "AI Providers" is a plugin name
-				"Providers are configured in the AI Providers plugin and listed in the image model dropdown above. Select a provider whose model supports vision.",
+				"Providers are configured in the AI providers plugin and listed in the image model dropdown above. Only providers with vision capability enabled in AI providers are shown.",
 			)
 			.addButton((button) =>
 				button.setButtonText("Reload providers").onClick(async () => {
 					try {
 						const service = await AiProvidersProvider.getService();
-						this.refreshModels(service);
+						const visionCount = this.refreshModels(service);
 						new Notice(
-							`Loaded ${service.providers.length} provider(s) from AI Providers`,
+							`Loaded ${visionCount} vision provider(s) from AI providers`,
 						);
 					} catch (e) {
 						debugLog(
 							context,
-							"Failed to reload providers: " + e,
+							"Failed to reload providers: " + String(e),
 						);
+						this.setFallbackModel();
 						new Notice(
-							// eslint-disable-next-line obsidianmd/ui/sentence-case -- "AI Providers" is a plugin name
-							"Could not reach the AI Providers plugin. Is it installed and enabled?",
+							"Could not reach the AI providers plugin. Is it installed and enabled?",
 						);
 					}
 					await saveSettings(plugin);
@@ -169,7 +195,11 @@ export class AiProvidersProvider extends Provider {
 						? e
 						: (JSON.stringify(e) ?? String(e));
 			debugLog(context, errMsg);
-			if (e instanceof Error && e.name === "AbortError") {
+			if (
+				controller.signal.aborted ||
+				(e instanceof Error &&
+					(e.name === "AbortError" || e.message === "Aborted"))
+			) {
 				const abortErr = new Error("Request was aborted");
 				abortErr.name = "AbortError";
 				(abortErr as unknown as { cause?: unknown }).cause = e;
@@ -186,7 +216,25 @@ export class AiProvidersProvider extends Provider {
 		}
 	}
 
-	private refreshModels(service: IAIProvidersService) {
+	private setFallbackModel() {
+		for (let i = possibleModels.length - 1; i >= 0; i--) {
+			if (possibleModels[i].provider === "ai-providers") {
+				possibleModels.splice(i, 1);
+			}
+		}
+		possibleModels.push(AI_PROVIDERS_FALLBACK_MODEL);
+		this.setLastModel(AI_PROVIDERS_FALLBACK_MODEL);
+		this.setLastImageModel(AI_PROVIDERS_FALLBACK_MODEL);
+		if (settings.aiAdapterSettings.provider === "ai-providers") {
+			settings.aiAdapterSettings.selectedModel =
+				AI_PROVIDERS_FALLBACK_MODEL;
+			settings.aiAdapterSettings.selectedImageModel =
+				AI_PROVIDERS_FALLBACK_MODEL;
+		}
+		notifyModelsChange();
+	}
+
+	private refreshModels(service: IAIProvidersService): number {
 		// Replace previously registered ai-providers entries with the current list
 		for (let i = possibleModels.length - 1; i >= 0; i--) {
 			if (possibleModels[i].provider === "ai-providers") {
@@ -194,7 +242,11 @@ export class AiProvidersProvider extends Provider {
 			}
 		}
 
-		for (const p of service.providers) {
+		const visionProviders = service.providers.filter((p) =>
+			isVisionProvider(service, p),
+		);
+
+		for (const p of visionProviders) {
 			possibleModels.push({
 				name: providerDisplayName(p),
 				model: p.id,
@@ -203,23 +255,48 @@ export class AiProvidersProvider extends Provider {
 			});
 		}
 
-		if (service.providers.length === 0) {
+		if (visionProviders.length === 0) {
 			possibleModels.push(AI_PROVIDERS_FALLBACK_MODEL);
 		}
 
+		const availableForProvider = possibleModels.filter(
+			(m) => m.provider === "ai-providers",
+		);
+		const matchingCurrent = availableForProvider.find(
+			(m) => m.model === this.lastImageModel?.model && m.model !== "",
+		);
+		const activeModel =
+			matchingCurrent ??
+			availableForProvider[0] ??
+			AI_PROVIDERS_FALLBACK_MODEL;
+
+		this.setLastModel(activeModel);
+		this.setLastImageModel(activeModel);
+		if (settings.aiAdapterSettings.provider === "ai-providers") {
+			settings.aiAdapterSettings.selectedModel = activeModel;
+			settings.aiAdapterSettings.selectedImageModel = activeModel;
+		}
+
 		notifyModelsChange();
+		return visionProviders.length;
 	}
 
 	private static async getService(): Promise<IAIProvidersService> {
+		if (!getApp().plugins?.enabledPlugins.has("ai-providers")) {
+			throw new Error(
+				"Could not reach the AI Providers plugin. Is it installed and enabled?",
+			);
+		}
+
 		const aiResolver = await waitForAI();
 
 		// waitForAI resolves only once the AI Providers plugin announces itself;
 		// cancel after a timeout so a missing plugin fails fast instead of hanging.
-		const timeout = setTimeout(() => aiResolver.cancel(), 5000);
+		const timeout = window.setTimeout(() => aiResolver.cancel(), 5000);
 		try {
 			return await aiResolver.promise;
 		} finally {
-			clearTimeout(timeout);
+			window.clearTimeout(timeout);
 		}
 	}
 

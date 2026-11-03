@@ -1,9 +1,24 @@
 # AI image analyzer
 
-This plugin allows you to analyze images in Obsidian using the Ollama API.
-Because of this it requires Ollama to be installed and running on some machine.
-Ensure you have the newest version of Ollama installed.
-[Ollama download](https://ollama.com/download)
+This plugin allows you to analyze images in Obsidian using vision-capable AI models.
+
+## Providers (Recommended: AI Providers)
+
+The recommended way to configure AI backends (and the future default) is via the [AI Providers](https://github.com/pfrankov/obsidian-ai-providers) community plugin:
+
+1. Install and enable the **AI Providers** plugin in Obsidian.
+2. Add your provider in AI Providers (OpenAI-compatible endpoints, OpenRouter, Ollama, LM Studio, Anthropic, Gemini, Groq, LiteLLM, etc.) and make sure **Vision** capability is enabled/checked for the model.
+3. In **AI image analyzer** settings, set **Provider** to `ai-providers` and select your configured vision model from the **Image model** dropdown.
+
+> **Note:** Going forward, new AI backends will be supported through the [AI Providers](https://github.com/pfrankov/obsidian-ai-providers) plugin rather than adding custom per-service providers to this plugin. If you need support for a new AI provider, please request it in the [AI Providers repository](https://github.com/pfrankov/obsidian-ai-providers) first.
+
+### Built-in Providers
+
+In addition to `ai-providers`, the following built-in providers are supported directly:
+
+- **Ollama** ([Ollama download](https://ollama.com/download))
+- **Google Gemini** (`gemini`)
+- **llama.cpp** (`llama-cpp` / `llama-server`)
 
 ## Features
 
@@ -93,7 +108,9 @@ If you want to contribute to this plugin, you can do so by creating a pull reque
 
 ### Adding new providers
 
-You can find a example provider in `src/providers/exampleProvider.ts`.
+This plugin integrates with the [AI Providers](https://github.com/pfrankov/obsidian-ai-providers) plugin (`ai-providers` provider option in settings), which supports OpenAI-compatible endpoints, OpenRouter, Ollama, LM Studio, Anthropic, Gemini, Groq, and many more. Going forward, if you want support for a new AI provider, please request or configure it in the [AI Providers](https://github.com/pfrankov/obsidian-ai-providers) plugin first rather than opening a provider request here.
+
+If you still want to contribute a built-in provider directly, you can find an example provider in `src/providers/exampleProvider.ts`.
 Just create a new file in the `src/providers` folder and implement the `Provider` interface like in the example.
 Then search for `[NEW PROVIDER]` in the codebase and modify the code accordingly.
 

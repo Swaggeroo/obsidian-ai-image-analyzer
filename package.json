@@ -14,7 +14,7 @@
 	"author": "",
 	"license": "GPL-3.0",
 	"devDependencies": {
-		"@eslint/eslintrc": "^3.3.6",
+		"@eslint/eslintrc": "^3.3.7",
 		"@eslint/js": "^10.0.1",
 		"@types/node": "25.9.5",
 		"@typescript-eslint/eslint-plugin": "8.68.0",
@@ -29,9 +29,9 @@
 		"typescript": "6.0.3"
 	},
 	"dependencies": {
-		"@google/genai": "^2.13.0",
-		"@obsidian-ai-providers/sdk": "^1.7.3",
-		"ollama": "^0.6.3",
-		"p-queue": "^9.3.3"
+		"@google/genai": "^2.32.0",
+		"@obsidian-ai-providers/sdk": "^1.9.0",
+		"ollama": "^0.6.4",
+		"p-queue": "^9.3.5"
 	}
 }

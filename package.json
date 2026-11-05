@@ -32,6 +32,6 @@
 		"@google/genai": "^2.32.0",
 		"@obsidian-ai-providers/sdk": "^1.9.0",
 		"ollama": "^0.6.4",
-		"p-queue": "^9.3.5"
+		"p-queue": "^10.0.0"
 	}
 }
